@@ -1,0 +1,3 @@
+bvnvbn
+60
+['C:/Users/user/Downloads', 'C:/Users/user/Documents']
