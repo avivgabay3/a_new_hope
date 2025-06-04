@@ -1,9 +1,8 @@
-import numpy as np
 import customtkinter as ctk
-import tkinter as ttk
 from tkinter import messagebox, filedialog
 import mss
 import os
+import ast
 """
 In this script, we will ask the user to enter all the wanted parameters for the main script,
 i.e name of operator (for log info), time length for each file, and desired path to save the files.
@@ -29,23 +28,50 @@ def create_monitor_subfolders(base_path):
 def save_configuration(userid, file_time, file_path, root):
     """Function to save configuration details to a text file."""
     try:
-        # Convert file_time to integer
         file_time = int(file_time)
 
-        # Open the file and write the details
+        # Defaults
+        existing_userid = userid
+        existing_file_time = file_time
+        existing_paths = []
+
+        # Read existing file if it exists
+        if os.path.exists("conf_info.txt"):
+            with open("conf_info.txt", "r") as file:
+                lines = file.readlines()
+
+            if len(lines) >= 3:
+                existing_userid = lines[0].strip()
+                existing_file_time = int(lines[1].strip())
+                try:
+                    existing_paths = ast.literal_eval(lines[2].strip())
+                    if not isinstance(existing_paths, list):
+                        existing_paths = []
+                except (ValueError, SyntaxError):
+                    existing_paths = []
+
+
+        # Append the new file_path if not already present
+        if file_path in existing_paths:
+            for i in range(len(existing_paths)):
+                if existing_paths[i] == file_path:
+                    existing_paths.pop(i)
+                    break
+        existing_paths.append(file_path)
+
+        # Write back updated data
         with open("conf_info.txt", "w") as file:
             file.write(f"{userid}\n")
             file.write(f"{file_time}\n")
-            file.write(f"{file_path}\n")
+            file.write(f"{existing_paths}\n")  # Save as a Python list (string form)
 
-        # Show success message
-        messagebox.showinfo("Success", "Configuration successfully saved to conf file")
+        # Success
+        messagebox.showinfo("Success", "Configuration successfully updated.")
         create_monitor_subfolders(file_path)
-        root.destroy() # If all the credentials are correct, close the gui and terminate the script
-    except ValueError:
-        # Handle the case where file_time is not a valid integer
-        messagebox.showerror("Error", "Please enter a valid number for the file length.")
+        root.destroy()
 
+    except ValueError:
+        messagebox.showerror("Error", "Please enter a valid number for the file length.")
 
 def confirm_signup(userid, file_time, file_path,root):
     """Function to show a confirmation pop-up when signing up."""
@@ -96,6 +122,19 @@ def mainGui():
     path_label.pack(fill="x", padx=20)
     path_entry = ctk.CTkEntry(frame, width=250, height=35)
     path_entry.pack(pady=5)
+
+    # 🛠️ Pre-fill entries if config exists
+    if os.path.exists("conf_info.txt"):
+        try:
+            with open("conf_info.txt", "r") as file:
+                lines = file.readlines()
+            if len(lines) >= 2:
+                existing_userid = lines[0].strip()
+                existing_file_time = lines[1].strip()
+                userid_entry.insert(0, existing_userid)
+                file_time_entry.insert(0, existing_file_time)
+        except Exception as e:
+            print(f"Failed to read existing config: {e}")
 
     # Browse button for selecting the path
     browse_button = ctk.CTkButton(frame, text="Browse", corner_radius=10, height=35,
