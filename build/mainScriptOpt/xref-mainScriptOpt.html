@@ -22,6 +22,7 @@ imports:
  &#8226;   <a href="#_weakrefset">_weakrefset</a>
  &#8226;   <a href="#abc">abc</a>
  &#8226;   <a href="#ast">ast</a>
+ &#8226;   <a href="#atexit">atexit</a>
  &#8226;   <a href="#codecs">codecs</a>
  &#8226;   <a href="#collections">collections</a>
  &#8226;   <a href="#copyreg">copyreg</a>
@@ -176,13 +177,17 @@ imports:
  &#8226;   <a href="#re._constants">re._constants</a>
  &#8226;   <a href="#re._parser">re._parser</a>
  &#8226;   <a href="#reprlib">reprlib</a>
+ &#8226;   <a href="#signal">signal</a>
  &#8226;   <a href="#sre_compile">sre_compile</a>
  &#8226;   <a href="#sre_constants">sre_constants</a>
  &#8226;   <a href="#sre_parse">sre_parse</a>
  &#8226;   <a href="#stat">stat</a>
  &#8226;   <a href="#subprocess">subprocess</a>
+ &#8226;   <a href="#sys">sys</a>
  &#8226;   <a href="#threading">threading</a>
  &#8226;   <a href="#time">time</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.auto">tqdm.auto</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#types">types</a>
  &#8226;   <a href="#warnings">warnings</a>
@@ -300,6 +305,28 @@ imports:
   <div class="import">
 imported by:
     <a href="#mainScriptOpt.py">mainScriptOpt.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="'IPython.display'"></a>
+  <a target="code" href="" type="text/plain"><tt>'IPython.display'</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.notebook">tqdm.notebook</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="'IPython.html'"></a>
+  <a target="code" href="" type="text/plain"><tt>'IPython.html'</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.notebook">tqdm.notebook</a>
 
   </div>
 
@@ -440,6 +467,17 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="'matplotlib.pyplot'"></a>
+  <a target="code" href="" type="text/plain"><tt>'matplotlib.pyplot'</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.gui">tqdm.gui</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="'numpy_distutils.command'"></a>
   <a target="code" href="" type="text/plain"><tt>'numpy_distutils.command'</tt></a>
 <span class="moduletype">MissingModule</span>  <div class="import">
@@ -467,6 +505,17 @@ imported by:
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
     <a href="#numpy.f2py.diagnose">numpy.f2py.diagnose</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="'pandas.core'"></a>
+  <a target="code" href="" type="text/plain"><tt>'pandas.core'</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.std">tqdm.std</a>
 
   </div>
 
@@ -501,6 +550,17 @@ imported by:
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
     <a href="#pyperclip">pyperclip</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="IPython"></a>
+  <a target="code" href="" type="text/plain"><tt>IPython</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.notebook">tqdm.notebook</a>
 
   </div>
 
@@ -2545,6 +2605,7 @@ imported by:
  &#8226;   <a href="#multiprocessing.managers">multiprocessing.managers</a>
  &#8226;   <a href="#multiprocessing.reduction">multiprocessing.reduction</a>
  &#8226;   <a href="#socket">socket</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
 
   </div>
 
@@ -2580,6 +2641,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.packaging._parser">setuptools._vendor.packaging._parser</a>
  &#8226;   <a href="#setuptools._vendor.wheel.vendored.packaging._parser">setuptools._vendor.wheel.vendored.packaging._parser</a>
  &#8226;   <a href="#setuptools.config.expand">setuptools.config.expand</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
  &#8226;   <a href="#traceback">traceback</a>
 
   </div>
@@ -2660,6 +2722,7 @@ imported by:
  &#8226;   <a href="#asyncio.unix_events">asyncio.unix_events</a>
  &#8226;   <a href="#asyncio.windows_events">asyncio.windows_events</a>
  &#8226;   <a href="#asyncio.windows_utils">asyncio.windows_utils</a>
+ &#8226;   <a href="#tqdm.asyncio">tqdm.asyncio</a>
  &#8226;   <a href="#unittest.async_case">unittest.async_case</a>
  &#8226;   <a href="#unittest.mock">unittest.mock</a>
 
@@ -3534,12 +3597,15 @@ imported by:
   <a name="atexit"></a>
   <tt>atexit</tt> <span class="moduletype"><i>(builtin module)</i></span>  <div class="import">
 imported by:
-    <a href="#logging">logging</a>
+    <a href="#colorama.initialise">colorama.initialise</a>
+ &#8226;   <a href="#logging">logging</a>
+ &#8226;   <a href="#mainScriptOpt.py">mainScriptOpt.py</a>
  &#8226;   <a href="#multiprocessing.forkserver">multiprocessing.forkserver</a>
  &#8226;   <a href="#multiprocessing.popen_fork">multiprocessing.popen_fork</a>
  &#8226;   <a href="#multiprocessing.util">multiprocessing.util</a>
  &#8226;   <a href="#rlcompleter">rlcompleter</a>
  &#8226;   <a href="#site">site</a>
+ &#8226;   <a href="#tqdm._monitor">tqdm._monitor</a>
  &#8226;   <a href="#weakref">weakref</a>
 
   </div>
@@ -4062,6 +4128,8 @@ imported by:
  &#8226;   <a href="#threading">threading</a>
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tokenize">tokenize</a>
+ &#8226;   <a href="#tqdm.gui">tqdm.gui</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
  &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#unittest._log">unittest._log</a>
  &#8226;   <a href="#unittest.case">unittest.case</a>
@@ -4081,6 +4149,130 @@ imported by:
 imported by:
     <a href="#collections">collections</a>
  &#8226;   <a href="#pyautogui">pyautogui</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="colorama"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/colorama/__init__.py" type="text/plain"><tt>colorama</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.ansi">colorama.ansi</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
+ &#8226;   <a href="#colorama.initialise">colorama.initialise</a>
+ &#8226;   <a href="#colorama.win32">colorama.win32</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.ansi">colorama.ansi</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
+ &#8226;   <a href="#colorama.initialise">colorama.initialise</a>
+ &#8226;   <a href="#colorama.win32">colorama.win32</a>
+ &#8226;   <a href="#colorama.winterm">colorama.winterm</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="colorama.ansi"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/colorama/ansi.py" type="text/plain"><tt>colorama.ansi</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#colorama">colorama</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="colorama.ansitowin32"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/colorama/ansitowin32.py" type="text/plain"><tt>colorama.ansitowin32</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.ansi">colorama.ansi</a>
+ &#8226;   <a href="#colorama.win32">colorama.win32</a>
+ &#8226;   <a href="#colorama.winterm">colorama.winterm</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#re">re</a>
+ &#8226;   <a href="#sys">sys</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.initialise">colorama.initialise</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="colorama.initialise"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/colorama/initialise.py" type="text/plain"><tt>colorama.initialise</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#atexit">atexit</a>
+ &#8226;   <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
+ &#8226;   <a href="#contextlib">contextlib</a>
+ &#8226;   <a href="#sys">sys</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#colorama">colorama</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="colorama.win32"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/colorama/win32.py" type="text/plain"><tt>colorama.win32</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#ctypes">ctypes</a>
+ &#8226;   <a href="#ctypes.wintypes">ctypes.wintypes</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
+ &#8226;   <a href="#colorama.winterm">colorama.winterm</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="colorama.winterm"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/colorama/winterm.py" type="text/plain"><tt>colorama.winterm</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#colorama">colorama</a>
+ &#8226;   <a href="#colorama.win32">colorama.win32</a>
+ &#8226;   <a href="#msvcrt">msvcrt</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
 
   </div>
 
@@ -4251,6 +4443,7 @@ imported by:
  &#8226;   <a href="#ast">ast</a>
  &#8226;   <a href="#asyncio.staggered">asyncio.staggered</a>
  &#8226;   <a href="#bdb">bdb</a>
+ &#8226;   <a href="#colorama.initialise">colorama.initialise</a>
  &#8226;   <a href="#configparser">configparser</a>
  &#8226;   <a href="#getpass">getpass</a>
  &#8226;   <a href="#glob">glob</a>
@@ -4297,6 +4490,7 @@ imported by:
  &#8226;   <a href="#setuptools.msvc">setuptools.msvc</a>
  &#8226;   <a href="#setuptools.wheel">setuptools.wheel</a>
  &#8226;   <a href="#subprocess">subprocess</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#unittest.case">unittest.case</a>
@@ -4441,6 +4635,7 @@ imported by:
     <a href="#_ios_support">_ios_support</a>
  &#8226;   <a href="#_pyrepl._minimal_curses">_pyrepl._minimal_curses</a>
  &#8226;   <a href="#_pyrepl.windows_console">_pyrepl.windows_console</a>
+ &#8226;   <a href="#colorama.win32">colorama.win32</a>
  &#8226;   <a href="#ctypes._aix">ctypes._aix</a>
  &#8226;   <a href="#ctypes._endian">ctypes._endian</a>
  &#8226;   <a href="#ctypes.macholib">ctypes.macholib</a>
@@ -4466,6 +4661,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.wheel.macosx_libfile">setuptools._vendor.wheel.macosx_libfile</a>
  &#8226;   <a href="#setuptools._vendor.wheel.vendored.packaging._manylinux">setuptools._vendor.wheel.vendored.packaging._manylinux</a>
  &#8226;   <a href="#setuptools.windows_support">setuptools.windows_support</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#watchdog.observers.inotify_c">watchdog.observers.inotify_c</a>
  &#8226;   <a href="#watchdog.observers.winapi">watchdog.observers.winapi</a>
  &#8226;   <a href="#webbrowser">webbrowser</a>
@@ -4627,6 +4823,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#_pyrepl.windows_console">_pyrepl.windows_console</a>
+ &#8226;   <a href="#colorama.win32">colorama.win32</a>
  &#8226;   <a href="#mss.windows">mss.windows</a>
  &#8226;   <a href="#pyautogui._pyautogui_win">pyautogui._pyautogui_win</a>
  &#8226;   <a href="#pygetwindow._pygetwindow_win">pygetwindow._pygetwindow_win</a>
@@ -5050,6 +5247,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.tomli._re">setuptools._vendor.tomli._re</a>
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
  &#8226;   <a href="#xmlrpc.client">xmlrpc.client</a>
 
   </div>
@@ -8292,6 +8490,7 @@ imported by:
 imported by:
     <a href="#_pyrepl.unix_console">_pyrepl.unix_console</a>
  &#8226;   <a href="#subprocess">subprocess</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
 
   </div>
 
@@ -8516,6 +8715,7 @@ imported by:
  &#8226;   <a href="#tempfile">tempfile</a>
  &#8226;   <a href="#tokenize">tokenize</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#tracemalloc">tracemalloc</a>
  &#8226;   <a href="#types">types</a>
  &#8226;   <a href="#typing">typing</a>
@@ -8804,6 +9004,7 @@ imports:
 imported by:
     <a href="#html.entities">html.entities</a>
  &#8226;   <a href="#http.server">http.server</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
 
   </div>
 
@@ -8977,6 +9178,7 @@ imported by:
  &#8226;   <a href="#setuptools._distutils">setuptools._distutils</a>
  &#8226;   <a href="#setuptools._vendor.importlib_metadata">setuptools._vendor.importlib_metadata</a>
  &#8226;   <a href="#setuptools.config.expand">setuptools.config.expand</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
 
   </div>
 
@@ -9320,6 +9522,7 @@ imported by:
  &#8226;   <a href="#importlib.resources.readers">importlib.resources.readers</a>
  &#8226;   <a href="#setuptools._importlib">setuptools._importlib</a>
  &#8226;   <a href="#setuptools._vendor.jaraco.text">setuptools._vendor.jaraco.text</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
 
   </div>
 
@@ -9516,6 +9719,7 @@ imported by:
 <span class="moduletype">MissingModule</span>  <div class="import">
 imported by:
     <a href="#setuptools._vendor.jaraco.text">setuptools._vendor.jaraco.text</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
 
   </div>
 
@@ -9580,6 +9784,7 @@ imported by:
  &#8226;   <a href="#setuptools.logging">setuptools.logging</a>
  &#8226;   <a href="#setuptools.monkey">setuptools.monkey</a>
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#unittest.async_case">unittest.async_case</a>
  &#8226;   <a href="#unittest.mock">unittest.mock</a>
@@ -9688,6 +9893,17 @@ imports:
 imported by:
     <a href="#urllib.parse">urllib.parse</a>
  &#8226;   <a href="#urllib.request">urllib.request</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ipywidgets"></a>
+  <a target="code" href="" type="text/plain"><tt>ipywidgets</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.notebook">tqdm.notebook</a>
 
   </div>
 
@@ -10069,6 +10285,7 @@ imported by:
  &#8226;   <a href="#setuptools.config._validate_pyproject.formats">setuptools.config._validate_pyproject.formats</a>
  &#8226;   <a href="#setuptools.config.pyprojecttoml">setuptools.config.pyprojecttoml</a>
  &#8226;   <a href="#setuptools.logging">setuptools.logging</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
  &#8226;   <a href="#unittest._log">unittest._log</a>
  &#8226;   <a href="#watchdog.events">watchdog.events</a>
  &#8226;   <a href="#watchdog.observers.fsevents">watchdog.observers.fsevents</a>
@@ -10142,6 +10359,17 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.more_itertools.recipes">setuptools._vendor.more_itertools.recipes</a>
  &#8226;   <a href="#statistics">statistics</a>
  &#8226;   <a href="#urllib.parse">urllib.parse</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="matplotlib"></a>
+  <a target="code" href="" type="text/plain"><tt>matplotlib</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.gui">tqdm.gui</a>
 
   </div>
 
@@ -10499,6 +10727,7 @@ imported by:
     <a href="#_pyrepl.windows_console">_pyrepl.windows_console</a>
  &#8226;   <a href="#asyncio.windows_events">asyncio.windows_events</a>
  &#8226;   <a href="#asyncio.windows_utils">asyncio.windows_utils</a>
+ &#8226;   <a href="#colorama.winterm">colorama.winterm</a>
  &#8226;   <a href="#getpass">getpass</a>
  &#8226;   <a href="#multiprocessing.popen_spawn_win32">multiprocessing.popen_spawn_win32</a>
  &#8226;   <a href="#multiprocessing.spawn">multiprocessing.spawn</a>
@@ -10516,6 +10745,7 @@ imports:
     <a href="#multiprocessing">multiprocessing</a>
  &#8226;   <a href="#multiprocessing.AuthenticationError">multiprocessing.AuthenticationError</a>
  &#8226;   <a href="#multiprocessing.BufferTooShort">multiprocessing.BufferTooShort</a>
+ &#8226;   <a href="#multiprocessing.RLock">multiprocessing.RLock</a>
  &#8226;   <a href="#multiprocessing.TimeoutError">multiprocessing.TimeoutError</a>
  &#8226;   <a href="#multiprocessing.connection">multiprocessing.connection</a>
  &#8226;   <a href="#multiprocessing.context">multiprocessing.context</a>
@@ -10560,6 +10790,7 @@ imported by:
  &#8226;   <a href="#multiprocessing.synchronize">multiprocessing.synchronize</a>
  &#8226;   <a href="#multiprocessing.util">multiprocessing.util</a>
  &#8226;   <a href="#pyi_rth_multiprocessing.py">pyi_rth_multiprocessing.py</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
 
   </div>
 
@@ -10584,6 +10815,18 @@ imported by:
 imported by:
     <a href="#multiprocessing">multiprocessing</a>
  &#8226;   <a href="#multiprocessing.connection">multiprocessing.connection</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="multiprocessing.RLock"></a>
+  <a target="code" href="" type="text/plain"><tt>multiprocessing.RLock</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#multiprocessing">multiprocessing</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
 
   </div>
 
@@ -11402,6 +11645,7 @@ imported by:
  &#8226;   <a href="#numpy.polynomial._polybase">numpy.polynomial._polybase</a>
  &#8226;   <a href="#setuptools.dist">setuptools.dist</a>
  &#8226;   <a href="#statistics">statistics</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
 
   </div>
 
@@ -18224,6 +18468,7 @@ imported by:
  &#8226;   <a href="#asyncio.windows_utils">asyncio.windows_utils</a>
  &#8226;   <a href="#bdb">bdb</a>
  &#8226;   <a href="#bz2">bz2</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
  &#8226;   <a href="#concurrent.futures.process">concurrent.futures.process</a>
  &#8226;   <a href="#concurrent.futures.thread">concurrent.futures.thread</a>
  &#8226;   <a href="#configparser">configparser</a>
@@ -18402,6 +18647,7 @@ imported by:
  &#8226;   <a href="#tempfile">tempfile</a>
  &#8226;   <a href="#threading">threading</a>
  &#8226;   <a href="#tkinter">tkinter</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#unittest.loader">unittest.loader</a>
  &#8226;   <a href="#unittest.main">unittest.main</a>
  &#8226;   <a href="#urllib.request">urllib.request</a>
@@ -18893,6 +19139,17 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="pandas"></a>
+  <a target="code" href="" type="text/plain"><tt>pandas</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.std">tqdm.std</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="pathlib"></a>
   <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/pathlib/__init__.py" type="text/plain"><tt>pathlib</tt></a>
 <span class="moduletype">Package</span>  <div class="import">
@@ -18934,6 +19191,7 @@ imported by:
  &#8226;   <a href="#setuptools.config.expand">setuptools.config.expand</a>
  &#8226;   <a href="#setuptools.discovery">setuptools.discovery</a>
  &#8226;   <a href="#setuptools.dist">setuptools.dist</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
  &#8226;   <a href="#watchdog.observers.api">watchdog.observers.api</a>
  &#8226;   <a href="#watchdog.utils.patterns">watchdog.utils.patterns</a>
  &#8226;   <a href="#zipfile._path">zipfile._path</a>
@@ -20006,6 +20264,7 @@ imported by:
  &#8226;   <a href="#argparse">argparse</a>
  &#8226;   <a href="#ast">ast</a>
  &#8226;   <a href="#base64">base64</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
  &#8226;   <a href="#configparser">configparser</a>
  &#8226;   <a href="#csv">csv</a>
  &#8226;   <a href="#ctypes._aix">ctypes._aix</a>
@@ -20146,6 +20405,10 @@ imported by:
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tokenize">tokenize</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
+ &#8226;   <a href="#tqdm.gui">tqdm.gui</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#unittest.case">unittest.case</a>
  &#8226;   <a href="#unittest.loader">unittest.loader</a>
@@ -24754,6 +25017,17 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="setuptools_scm"></a>
+  <a target="code" href="" type="text/plain"><tt>setuptools_scm</tt></a>
+<span class="moduletype">MissingModule</span>  <div class="import">
+imported by:
+    <a href="#tqdm.version">tqdm.version</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="shlex"></a>
   <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/shlex.py" type="text/plain"><tt>shlex</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -24769,6 +25043,7 @@ imports:
 imported by:
     <a href="#pdb">pdb</a>
  &#8226;   <a href="#setuptools.dist">setuptools.dist</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#webbrowser">webbrowser</a>
 
   </div>
@@ -24842,6 +25117,7 @@ imported by:
  &#8226;   <a href="#asyncio.proactor_events">asyncio.proactor_events</a>
  &#8226;   <a href="#asyncio.runners">asyncio.runners</a>
  &#8226;   <a href="#asyncio.unix_events">asyncio.unix_events</a>
+ &#8226;   <a href="#mainScriptOpt.py">mainScriptOpt.py</a>
  &#8226;   <a href="#multiprocessing.forkserver">multiprocessing.forkserver</a>
  &#8226;   <a href="#multiprocessing.managers">multiprocessing.managers</a>
  &#8226;   <a href="#multiprocessing.popen_fork">multiprocessing.popen_fork</a>
@@ -25205,6 +25481,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.wheel.vendored.packaging.tags">setuptools._vendor.wheel.vendored.packaging.tags</a>
  &#8226;   <a href="#setuptools.command.bdist_wheel">setuptools.command.bdist_wheel</a>
  &#8226;   <a href="#tarfile">tarfile</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#watchdog.observers.inotify_c">watchdog.observers.inotify_c</a>
  &#8226;   <a href="#zipfile">zipfile</a>
  &#8226;   <a href="#zipimport">zipimport</a>
@@ -25278,6 +25555,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.wheel.vendored.packaging._musllinux">setuptools._vendor.wheel.vendored.packaging._musllinux</a>
  &#8226;   <a href="#setuptools._vendor.wheel.vendored.packaging.tags">setuptools._vendor.wheel.vendored.packaging.tags</a>
  &#8226;   <a href="#setuptools.installer">setuptools.installer</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#watchdog.tricks">watchdog.tricks</a>
  &#8226;   <a href="#watchdog.utils.process_watcher">watchdog.utils.process_watcher</a>
  &#8226;   <a href="#webbrowser">webbrowser</a>
@@ -25326,6 +25604,8 @@ imported by:
  &#8226;   <a href="#code">code</a>
  &#8226;   <a href="#codecs">codecs</a>
  &#8226;   <a href="#collections">collections</a>
+ &#8226;   <a href="#colorama.ansitowin32">colorama.ansitowin32</a>
+ &#8226;   <a href="#colorama.initialise">colorama.initialise</a>
  &#8226;   <a href="#concurrent.futures.process">concurrent.futures.process</a>
  &#8226;   <a href="#configparser">configparser</a>
  &#8226;   <a href="#contextlib">contextlib</a>
@@ -25368,6 +25648,7 @@ imported by:
  &#8226;   <a href="#linecache">linecache</a>
  &#8226;   <a href="#locale">locale</a>
  &#8226;   <a href="#logging">logging</a>
+ &#8226;   <a href="#mainScriptOpt.py">mainScriptOpt.py</a>
  &#8226;   <a href="#mimetypes">mimetypes</a>
  &#8226;   <a href="#mouseinfo">mouseinfo</a>
  &#8226;   <a href="#mss.darwin">mss.darwin</a>
@@ -25520,6 +25801,13 @@ imported by:
  &#8226;   <a href="#threading">threading</a>
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tokenize">tokenize</a>
+ &#8226;   <a href="#tqdm._tqdm_pandas">tqdm._tqdm_pandas</a>
+ &#8226;   <a href="#tqdm.asyncio">tqdm.asyncio</a>
+ &#8226;   <a href="#tqdm.autonotebook">tqdm.autonotebook</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#types">types</a>
  &#8226;   <a href="#typing">typing</a>
@@ -25682,6 +25970,7 @@ imported by:
  &#8226;   <a href="#_pyrepl.unix_console">_pyrepl.unix_console</a>
  &#8226;   <a href="#_pyrepl.unix_eventqueue">_pyrepl.unix_eventqueue</a>
  &#8226;   <a href="#getpass">getpass</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#tty">tty</a>
 
   </div>
@@ -25718,6 +26007,7 @@ imported by:
  &#8226;   <a href="#setuptools.config._validate_pyproject.error_reporting">setuptools.config._validate_pyproject.error_reporting</a>
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
  &#8226;   <a href="#site">site</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
  &#8226;   <a href="#traceback">traceback</a>
 
   </div>
@@ -25781,6 +26071,8 @@ imported by:
  &#8226;   <a href="#socketserver">socketserver</a>
  &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#sysconfig">sysconfig</a>
+ &#8226;   <a href="#tqdm._monitor">tqdm._monitor</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
  &#8226;   <a href="#unittest.mock">unittest.mock</a>
  &#8226;   <a href="#watchdog.observers.api">watchdog.observers.api</a>
  &#8226;   <a href="#watchdog.observers.fsevents">watchdog.observers.fsevents</a>
@@ -25863,6 +26155,8 @@ imported by:
  &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#tarfile">tarfile</a>
  &#8226;   <a href="#threading">threading</a>
+ &#8226;   <a href="#tqdm._monitor">tqdm._monitor</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
  &#8226;   <a href="#unittest.case">unittest.case</a>
  &#8226;   <a href="#unittest.runner">unittest.runner</a>
  &#8226;   <a href="#urllib.request">urllib.request</a>
@@ -26079,6 +26373,318 @@ imports:
 imported by:
     <a href="#tomllib._parser">tomllib._parser</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/__init__.py" type="text/plain"><tt>tqdm</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#tqdm._monitor">tqdm._monitor</a>
+ &#8226;   <a href="#tqdm._tqdm_pandas">tqdm._tqdm_pandas</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
+ &#8226;   <a href="#tqdm.gui">tqdm.gui</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#tqdm.version">tqdm.version</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#mainScriptOpt.py">mainScriptOpt.py</a>
+ &#8226;   <a href="#tqdm._dist_ver">tqdm._dist_ver</a>
+ &#8226;   <a href="#tqdm._monitor">tqdm._monitor</a>
+ &#8226;   <a href="#tqdm._tqdm_pandas">tqdm._tqdm_pandas</a>
+ &#8226;   <a href="#tqdm.asyncio">tqdm.asyncio</a>
+ &#8226;   <a href="#tqdm.auto">tqdm.auto</a>
+ &#8226;   <a href="#tqdm.autonotebook">tqdm.autonotebook</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
+ &#8226;   <a href="#tqdm.gui">tqdm.gui</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
+ &#8226;   <a href="#tqdm.version">tqdm.version</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm._dist_ver"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/_dist_ver.py" type="text/plain"><tt>tqdm._dist_ver</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#tqdm">tqdm</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm.version">tqdm.version</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm._monitor"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/_monitor.py" type="text/plain"><tt>tqdm._monitor</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#atexit">atexit</a>
+ &#8226;   <a href="#threading">threading</a>
+ &#8226;   <a href="#time">time</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm._tqdm_pandas"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/_tqdm_pandas.py" type="text/plain"><tt>tqdm._tqdm_pandas</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#sys">sys</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.asyncio"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/asyncio.py" type="text/plain"><tt>tqdm.asyncio</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#asyncio">asyncio</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm.auto">tqdm.auto</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.auto"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/auto.py" type="text/plain"><tt>tqdm.auto</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.asyncio">tqdm.asyncio</a>
+ &#8226;   <a href="#tqdm.autonotebook">tqdm.autonotebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#mainScriptOpt.py">mainScriptOpt.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.autonotebook"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/autonotebook.py" type="text/plain"><tt>tqdm.autonotebook</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#sys">sys</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm.auto">tqdm.auto</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.cli"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/cli.py" type="text/plain"><tt>tqdm.cli</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#ast">ast</a>
+ &#8226;   <a href="#importlib">importlib</a>
+ &#8226;   <a href="#importlib.resources">importlib.resources</a>
+ &#8226;   <a href="#importlib_resources">importlib_resources</a>
+ &#8226;   <a href="#logging">logging</a>
+ &#8226;   <a href="#pathlib">pathlib</a>
+ &#8226;   <a href="#re">re</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#textwrap">textwrap</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#tqdm.version">tqdm.version</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.gui"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/gui.py" type="text/plain"><tt>tqdm.gui</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#'matplotlib.pyplot'">'matplotlib.pyplot'</a>
+ &#8226;   <a href="#collections">collections</a>
+ &#8226;   <a href="#matplotlib">matplotlib</a>
+ &#8226;   <a href="#re">re</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.notebook"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/notebook.py" type="text/plain"><tt>tqdm.notebook</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#'IPython.display'">'IPython.display'</a>
+ &#8226;   <a href="#'IPython.html'">'IPython.html'</a>
+ &#8226;   <a href="#IPython">IPython</a>
+ &#8226;   <a href="#html">html</a>
+ &#8226;   <a href="#ipywidgets">ipywidgets</a>
+ &#8226;   <a href="#re">re</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#warnings">warnings</a>
+ &#8226;   <a href="#weakref">weakref</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.autonotebook">tqdm.autonotebook</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.std"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/std.py" type="text/plain"><tt>tqdm.std</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#'pandas.core'">'pandas.core'</a>
+ &#8226;   <a href="#collections">collections</a>
+ &#8226;   <a href="#contextlib">contextlib</a>
+ &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#multiprocessing">multiprocessing</a>
+ &#8226;   <a href="#multiprocessing.RLock">multiprocessing.RLock</a>
+ &#8226;   <a href="#numbers">numbers</a>
+ &#8226;   <a href="#pandas">pandas</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#threading">threading</a>
+ &#8226;   <a href="#time">time</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm._monitor">tqdm._monitor</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
+ &#8226;   <a href="#warnings">warnings</a>
+ &#8226;   <a href="#weakref">weakref</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.asyncio">tqdm.asyncio</a>
+ &#8226;   <a href="#tqdm.auto">tqdm.auto</a>
+ &#8226;   <a href="#tqdm.autonotebook">tqdm.autonotebook</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
+ &#8226;   <a href="#tqdm.gui">tqdm.gui</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.utils"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/utils.py" type="text/plain"><tt>tqdm.utils</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#array">array</a>
+ &#8226;   <a href="#colorama">colorama</a>
+ &#8226;   <a href="#ctypes">ctypes</a>
+ &#8226;   <a href="#fcntl">fcntl</a>
+ &#8226;   <a href="#functools">functools</a>
+ &#8226;   <a href="#inspect">inspect</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#re">re</a>
+ &#8226;   <a href="#shlex">shlex</a>
+ &#8226;   <a href="#struct">struct</a>
+ &#8226;   <a href="#subprocess">subprocess</a>
+ &#8226;   <a href="#sys">sys</a>
+ &#8226;   <a href="#termios">termios</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#unicodedata">unicodedata</a>
+ &#8226;   <a href="#warnings">warnings</a>
+ &#8226;   <a href="#weakref">weakref</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm.std">tqdm.std</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="tqdm.version"></a>
+  <a target="code" href="///C:/Users/user/AppData/Local/Programs/Python/Python313/Lib/site-packages/tqdm/version.py" type="text/plain"><tt>tqdm.version</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#setuptools_scm">setuptools_scm</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm._dist_ver">tqdm._dist_ver</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm.cli">tqdm.cli</a>
 
   </div>
 
@@ -26625,6 +27231,7 @@ imported by:
  &#8226;   <a href="#re._parser">re._parser</a>
  &#8226;   <a href="#setuptools.unicode_utils">setuptools.unicode_utils</a>
  &#8226;   <a href="#stringprep">stringprep</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#urllib.parse">urllib.parse</a>
  &#8226;   <a href="#watchdog.observers.fsevents">watchdog.observers.fsevents</a>
@@ -27238,6 +27845,14 @@ imported by:
  &#8226;   <a href="#tarfile">tarfile</a>
  &#8226;   <a href="#tempfile">tempfile</a>
  &#8226;   <a href="#threading">threading</a>
+ &#8226;   <a href="#tqdm">tqdm</a>
+ &#8226;   <a href="#tqdm._monitor">tqdm._monitor</a>
+ &#8226;   <a href="#tqdm.auto">tqdm.auto</a>
+ &#8226;   <a href="#tqdm.autonotebook">tqdm.autonotebook</a>
+ &#8226;   <a href="#tqdm.gui">tqdm.gui</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#unittest.async_case">unittest.async_case</a>
@@ -27848,6 +28463,9 @@ imported by:
  &#8226;   <a href="#multiprocessing.util">multiprocessing.util</a>
  &#8226;   <a href="#numpy.lib._npyio_impl">numpy.lib._npyio_impl</a>
  &#8226;   <a href="#tempfile">tempfile</a>
+ &#8226;   <a href="#tqdm.notebook">tqdm.notebook</a>
+ &#8226;   <a href="#tqdm.std">tqdm.std</a>
+ &#8226;   <a href="#tqdm.utils">tqdm.utils</a>
  &#8226;   <a href="#unittest.signals">unittest.signals</a>
  &#8226;   <a href="#xml.sax.expatreader">xml.sax.expatreader</a>
 

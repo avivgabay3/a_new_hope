@@ -188,6 +188,9 @@ def record_screen(monitor_id, save_path, scale_factor=1.0):
         pbar.close()
 
 def monitor_config():
+    config_file_path = r"C:\Users\user\PycharmProjects\a_new_hope\conf_info.txt"
+    directory = os.path.dirname(config_file_path)
+
     event_handler = ConfigHandler()
     observer = Observer()
     observer.schedule(event_handler, path=".", recursive=False)
