@@ -1,0 +1,6 @@
+[2025-06-12 13:02:39] Total size before cleanup: 2821.35 MB
+[2025-06-12 13:02:39] Total storage after cleanup: 2821.35 MB
+[2025-06-12 13:02:39] Total storage is still above the target size of 1000 MB.
+[2025-06-12 13:03:00] Total size before cleanup: 2821.35 MB
+[2025-06-12 13:03:00] Total storage after cleanup: 2821.35 MB
+[2025-06-12 13:03:00] Total storage is still above the target size of 1000 MB.

@@ -1,3 +1,4 @@
-bvnvbn
-10
-['C:/Users/user/Documents', 'C:/Users/user/Downloads']
+5
+2
+['C:/Users/user/Pictures', 'C:/Users/user/Downloads', 'C:/Users/user/Documents']
+100

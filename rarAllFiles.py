@@ -33,7 +33,7 @@ def rarFiles(folder_path):
 
 def get_monitor_folders():
     with open('C:/Users/user/PycharmProjects/a_new_hope/conf_info.txt', 'r') as f:
-        folders_path_str = f.readlines()[-1].strip()
+        folders_path_str = f.readlines()[-2].strip()
     folders_path = ast.literal_eval(folders_path_str)
     with mss.mss() as sct:
         monitors = sct.monitors

@@ -1,9 +1,6 @@
 import os
-import wave
 import threading
-import subprocess
 import customtkinter as ctk
-import pyaudio
 # START OF SCRIPT
 import time
 import cv2
@@ -19,17 +16,20 @@ import signal
 import sys
 from tqdm import tqdm
 import atexit
+from tkinter import messagebox, filedialog, PhotoImage
 
 config = {
-    "userid": None,
+    "fps": 5,
     "file_time": None,
-    "save_path": [None]
+    "save_path": [None],
+    "resolution": 80,
 }
 
 shared_state = {
     "fps": 5,
     "start_time": None,
     "duration": 60,  # in seconds
+    "monitor_id": 0,
 }
 
 recording_started_event = threading.Event()
@@ -63,24 +63,26 @@ def read_config():
     try:
         with open('C:/Users/user/PycharmProjects/a_new_hope/conf_info.txt', 'r') as f:
             lines = f.readlines()
-            for i in range(0, len(lines), 3):
-                user_id = lines[i].strip()
+            for i in range(0, len(lines), 4):
+                fps = lines[i].strip()
                 minutes = int(lines[i + 1].strip())
                 paths = ast.literal_eval(lines[i + 2].strip())
-            return user_id, minutes, paths
+                res = int(lines[i + 3].strip()) / 100
+            return fps, minutes, paths, res
     except Exception as e:
         print(f"Error reading config: {e}")
-        return None, None, None
+        return None, None, None, None
 
 class ConfigHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if event.src_path.endswith("conf_info.txt"):
             print("Configuration file updated. Reloading settings...")
-            new_userid, new_file_time, new_save_path = read_config()
+            new_fps, new_file_time, new_save_path, new_resolution = read_config()
             with config_lock:
-                config["userid"] = new_userid
+                config["fps"] = new_fps
                 config["file_time"] = new_file_time
                 config["save_path"] = new_save_path
+                config["resolution"] = new_resolution
             config_updated.set()
 
 def get_monitor_for_cursor(monitors, mouse_x, mouse_y):
@@ -90,15 +92,15 @@ def get_monitor_for_cursor(monitors, mouse_x, mouse_y):
             return i
     return None
 
-def record_screen(monitor_id, save_path, scale_factor=1.0):
+def record_screen(monitor_id, save_path):
     fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-    fps = 5.0
     sct = mss.mss()
     monitors = sct.monitors
     if monitor_id >= len(monitors):
         print(f"Invalid monitor_id {monitor_id}, using first monitor.")
         monitor_id = 1
-
+    scale_factor = config["resolution"]
+    fps = int(config["fps"])
     monitor = monitors[monitor_id]
     screen_width, screen_height = monitor["width"], monitor["height"]
     output_width = int(screen_width * scale_factor)
@@ -121,12 +123,12 @@ def record_screen(monitor_id, save_path, scale_factor=1.0):
 
     try:
         shared_state["start_time"] = datetime.now()
+        shared_state["monitor_id"] = monitor_id
         recording_started_event.set()  # signal GUI once
         print(f'recording event set')
         while not terminate_program.is_set():
             with config_lock:
-                file_time = config["file_time"]
-                username = config["userid"]
+                pass
             if frame_count == 0 or frame_count >= total_frames:
                 if out:
                     out.release()
@@ -190,75 +192,34 @@ def record_screen(monitor_id, save_path, scale_factor=1.0):
         print(f"Error on monitor {monitor_id}: {e}")
         if out:
             out.release()
-            compress_and_remove_if_exists(video_paths.get(monitor_id, ""))
         pbar.close()
 
-    finally:
-        if monitor_id in open_writers:
-            open_writers[monitor_id].release()
-            del open_writers[monitor_id]
-        if monitor_id in video_paths:
-            compress_and_remove_if_exists(video_paths[monitor_id])
-            del video_paths[monitor_id]
-        pbar.close()
 
 def monitor_config():
     config_file_path = r"C:\Users\user\PycharmProjects\a_new_hope\conf_info.txt"
-    directory = os.path.dirname(config_file_path)
-
     event_handler = ConfigHandler()
     observer = Observer()
     observer.schedule(event_handler, path=".", recursive=False)
     observer.start()
 
-def run_scan(monitor_id, scale_factor=1.0):
+def run_scan(monitor_id):
     while not terminate_program.is_set():
         with config_lock:
-            userid, file_time, save_paths = config["userid"], config["file_time"], config["save_path"]
+            fps, file_time, save_paths, scale_factor = config["fps"], config["file_time"], config["save_path"], config["resolution"]
 
-        if not all([userid, file_time, save_paths]):
+        if not all([fps, file_time, save_paths, scale_factor]):
             print("Invalid configuration. Retrying...")
             time.sleep(5)
             continue
-
         save_path = save_paths[-1]
-        print(f"Starting screen recording for Monitor {monitor_id} at {scale_factor*100:.0f}% resolution.")
-        record_screen(monitor_id, save_path, scale_factor)
+        print(f"Starting screen recording for Monitor {monitor_id} at {scale_factor:.0f}% resolution.")
+        record_screen(monitor_id, save_path)
 
-def signal_handler(sig, frame):
-    print("\nGracefully stopping... Please wait.")
-    terminate_program.set()
-
-    for monitor_id, writer in open_writers.items():
-        try:
-            writer.release()
-            compress_and_remove_if_exists(video_paths.get(monitor_id, ""))
-        except Exception as e:
-            print(f"Error during signal cleanup for monitor {monitor_id}: {e}")
-    open_writers.clear()
-    video_paths.clear()
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-
-def cleanup_on_exit():
-    if not terminate_program.is_set():
-        terminate_program.set()
-    for monitor_id, writer in open_writers.items():
-        try:
-            writer.release()
-            compress_and_remove_if_exists(video_paths.get(monitor_id, ""))
-        except Exception as e:
-            print(f"Cleanup error on exit for monitor {monitor_id}: {e}")
-
-atexit.register(cleanup_on_exit)
 
 def mainRecording():
     global config
-    config["userid"], config["file_time"], config["save_path"] = read_config()
+    config["fps"], config["file_time"], config["save_path"], config["resolution"] = read_config()
     monitor_config()
-
-    scale_factor = 0.8
 
     with mss.mss() as sct:
         monitors = sct.monitors
@@ -266,7 +227,7 @@ def mainRecording():
 
         threads = []
         for i in range(1, num_monitors + 1):
-            thread = threading.Thread(target=run_scan, args=(i, scale_factor), daemon=True)
+            thread = threading.Thread(target=run_scan, args=(i,), daemon=True)
             thread.start()
             threads.append(thread)
 
@@ -279,107 +240,140 @@ def mainRecording():
 class HomeFrame(ctk.CTkFrame):
     def __init__(self, master, controller):
         super().__init__(master)
-        self.controller = controller
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         container = ctk.CTkFrame(self)
         container.pack(expand=True, fill="both", padx=20, pady=20)
 
-        self.title_label = ctk.CTkLabel(container, text="A New Hope", font=("Helvetica", 32, "bold"))
-        self.title_label.pack(pady=40)
+        ctk.CTkLabel(container, text="Configuration", font=("Helvetica", 24, "bold")).pack(pady=20)
 
-        ctk.CTkButton(container, text="🎤 Microphone Recorder", command=lambda: controller.show_frame("Recorder")).pack(pady=20)
-        ctk.CTkButton(container, text="⚙️ Configuration Tool", command=lambda: controller.show_frame("Config")).pack(pady=20)
-        ctk.CTkButton(container, text="⬅ Back to Main Menu", command=lambda: controller.show_frame("MainMenu")).pack(pady=20)
+        self.fps_entry = self._labeled_entry(container, "FPS:")
+        self.file_time_entry = self._labeled_entry(container, "File length (in minutes):")
+        self.path_entry = self._labeled_entry(container, "Save path:")
+        self.res_entry = self._labeled_entry(container, "Resolution (0-100, When higher value means higher resolution):")
 
-    def change_title_color(self):
-        original_color = self.title_label.cget("text_color")
-        self.title_label.configure(text_color="yellow")
-        self.after(2000, lambda: self.title_label.configure(text_color=original_color))
+        browse_button = ctk.CTkButton(container, text="Browse", command=self.browse_folder)
+        browse_button.pack(pady=(5, 15))
 
+        enter_button = ctk.CTkButton(container, text="Save Configuration",
+                                     command=self.confirm_config)
+        enter_button.pack(pady=(10, 5))
 
-class RecorderFrame(ctk.CTkFrame):
+        ctk.CTkButton(container, text="⬅ Back to Home", command=lambda: master.show_frame("MainMenu")).pack(pady=5)
+
+        self.load_existing_config()
+
+    def _labeled_entry(self, parent, label):
+        ctk.CTkLabel(parent, text=label, anchor="w").pack(fill="x")
+        entry = ctk.CTkEntry(parent)
+        entry.pack(pady=5)
+        return entry
+
+    def browse_folder(self):
+        path = filedialog.askdirectory()
+        if path:
+            self.path_entry.delete(0, ctk.END)
+            self.path_entry.insert(0, path)
+
+    def confirm_config(self):
+        fps = int(self.fps_entry.get())
+        file_time = self.file_time_entry.get()
+        file_path = self.path_entry.get()
+        resolution = self.res_entry.get()
+        response = messagebox.askyesno("Confirm Configuration",
+                                       f"FPS: {fps}\n\nFile Length: {file_time}\n\nPath: {file_path}\n\nResolution: {resolution}")
+        if response:
+            self.save_config(fps, file_time, file_path, resolution)
+
+    def save_config(self, fps, file_time, file_path, res):
+        try:
+            file_time = int(file_time)
+            existing_paths = []
+
+            if os.path.exists("conf_info.txt"):
+                with open("conf_info.txt", "r") as file:
+                    lines = file.readlines()
+                if len(lines) >= 3:
+                    try:
+                        existing_paths = ast.literal_eval(lines[2].strip())
+                        if not isinstance(existing_paths, list):
+                            existing_paths = []
+                    except Exception:
+                        pass
+
+            if file_path in existing_paths:
+                existing_paths.remove(file_path)
+            existing_paths.append(file_path)
+
+            with open("conf_info.txt", "w") as file:
+                file.write(f"{fps}\n{file_time}\n{existing_paths}\n{res}\n")
+
+            self.create_monitor_subfolders(file_path)
+            messagebox.showinfo("Success", "Configuration saved.")
+        except ValueError:
+            messagebox.showerror("Error", "File length or Resolution are invalid.")
+
+    def load_existing_config(self):
+        if os.path.exists("conf_info.txt"):
+            with open("conf_info.txt", "r") as file:
+                lines = file.readlines()
+                if len(lines) >= 3:
+                    self.fps_entry.insert(0, lines[0].strip())
+                    self.file_time_entry.insert(0, lines[1].strip())
+                    self.res_entry.insert(0, lines[3].strip())
+
+    def create_monitor_subfolders(self, base_path):
+        with mss.mss() as sct:
+            for i in range(1, len(sct.monitors)):
+                folder_path = os.path.join(base_path, str(i))
+                os.makedirs(folder_path, exist_ok=True)
+
+class WelcomeFrame(ctk.CTkFrame):
     def __init__(self, master, controller):
         super().__init__(master)
         self.controller = controller
-        self.recording = False
 
-        container = ctk.CTkFrame(self)
-        container.pack(expand=True, fill="both", padx=20, pady=20)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
-        self.label = ctk.CTkLabel(container, text="Press to Start/Stop Recording 🎤", font=ctk.CTkFont(size=16))
-        self.label.pack(pady=20)
+        title = ctk.CTkLabel(self, text= "Welcome to ScanOT2!", font=("Helvetica", 32, "bold"))
+        title.grid(row=0, column=0, pady=(40, 20), sticky="n")
 
-        self.button = ctk.CTkButton(container, text="🎤", command=self.click_handle, width=80, height=40,
-                                    font=ctk.CTkFont(size=20))
-        self.button.pack(pady=10)
+        description = (
+            "ScanOT2 is a designated screen recording app developed by the Cyber OT team.\n"
+            "This tool was developed for stand alone control PCs, in order to better investigate occurrences out in the \nfield, and help keep track of past events.\n\n"
+            "The features available in this new and updated version include:\n\n"
+            "- Configuration of video recording settings dynamically (Resolution, FPS, and more)\n\n"
+            "- Monitoring of ongoing recordings\n\n"
+            "- Automatic managing and compression of your screen recordings\n\n"
+            "Get started by clicking the button below."
+        )
+        ctk.CTkLabel(self, text=description, justify="left", font=("Helvetica", 14)).grid(
+            row=1, column=0, padx=50, sticky="n"
+        )
 
-        self.status = ctk.CTkLabel(container, text="Status: Idle", text_color="gray")
-        self.status.pack(pady=10)
-
-        ctk.CTkButton(container, text="⬅ Back to Home", command=lambda: controller.show_frame("Home")).pack(pady=10)
-
-    def click_handle(self):
-        if self.recording:
-            self.recording = False
-            self.status.configure(text="Status: Idle...", text_color="gray")
-            self.button.configure(text_color="black")
-        else:
-            self.recording = True
-            self.status.configure(text="Status: Recording", text_color="green")
-            self.button.configure(text_color="gray")
-            threading.Thread(target=self.start_recording).start()
-            self.controller.frames["Home"].change_title_color()
-
-    def start_recording(self):
-        CHUNK = 1024
-        FORMAT = pyaudio.paInt16
-        CHANNELS = 1
-        RATE = 44100
-
-        audio = pyaudio.PyAudio()
-        stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
-        frames = []
-
-        while self.recording:
-            data = stream.read(CHUNK)
-            frames.append(data)
-
-        stream.stop_stream()
-        stream.close()
-        audio.terminate()
-
-        output_dir = os.path.join(os.path.expanduser("~"), "sound_files")
-        os.makedirs(output_dir, exist_ok=True)
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_path = os.path.join(output_dir, f"recording_{timestamp}.wav")
-
-        with wave.open(file_path, 'wb') as wf:
-            wf.setnchannels(CHANNELS)
-            wf.setsampwidth(audio.get_sample_size(FORMAT))
-            wf.setframerate(RATE)
-            wf.writeframes(b''.join(frames))
-
-
-class ConfigFrame(ctk.CTkFrame):
-    def __init__(self, master, controller):
-        super().__init__(master)
-        ctk.CTkLabel(self, text="Configuration Tool", font=ctk.CTkFont(size=20, weight="bold")).pack(pady=20)
-        ctk.CTkLabel(self, text="(This is a placeholder for your settings)").pack(pady=10)
-        ctk.CTkButton(self, text="⬅ Back to Home", command=lambda: controller.show_frame("Home")).pack(pady=20)
+        ctk.CTkButton(self, text="Continue", width=200, command=lambda: controller.show_frame("MainMenu")).grid(
+            row=2, column=0, pady=(30, 20)
+        )
 
 
 class MonitorFrame(ctk.CTkFrame):
     def __init__(self, master, controller):
         super().__init__(master)
         self.controller = controller
-        ctk.CTkLabel(self, text="Recording Monitor", font=("Helvetica", 24, "bold")).pack(pady=20)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
-        self.progressbar = ctk.CTkProgressBar(self)
-        self.progressbar.pack(pady=10)
-        self.progressbar.set(0)
+        ctk.CTkLabel(self, text="Recording Status", font=("Helvetica", 24, "bold")).pack(pady=(30, 10))
 
+        self.monitor_widgets = {}  # Dict to store widgets per monitor
+
+        # Create a container for all progress bars
+        self.progress_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.progress_container.pack(fill="both", expand=True, padx=50)
+
+        # --- Back Button ---
         ctk.CTkButton(self, text="⬅ Back to Main Menu", command=lambda: controller.show_frame("MainMenu")).pack(pady=20)
 
     def on_show(self):
@@ -388,42 +382,128 @@ class MonitorFrame(ctk.CTkFrame):
 
     def wait_for_recording_start(self):
         print('in wait_for_recording_start')
-        def checker():
-            recording_started_event.wait()
-            print('event recognized by wait_for_recording_start')
-            start_time = shared_state["start_time"]
-            duration = config["file_time"] * 60
 
-            self.after(0, self.animate_progress, start_time, duration)
-            recording_started_event.clear()
-            self.wait_for_recording_start()
+        def checker():
+            while True:
+                recording_started_event.wait()
+                print('event recognized by wait_for_recording_start')
+                monitor_id = shared_state["monitor_id"]  # You'll need to store which monitor started
+                start_time = shared_state["start_time"]
+                duration = config["file_time"] * 60
+                self.after(0, self.start_monitor_progress, monitor_id, start_time, duration)
+                recording_started_event.clear()
 
         threading.Thread(target=checker, daemon=True).start()
 
+    def start_monitor_progress(self, monitor_id, start_time, duration):
+        if monitor_id not in self.monitor_widgets:
+            self.create_monitor_widgets(monitor_id)
 
-    def animate_progress(self, start_time, duration):
+        self.animate_progress(monitor_id, start_time, duration)
+
+    def create_monitor_widgets(self, monitor_id):
+        frame = ctk.CTkFrame(self.progress_container, fg_color="transparent")
+        frame.pack(fill="x", pady=10)
+
+        title = ctk.CTkLabel(frame, text=f"Monitor {monitor_id}", font=("Helvetica", 16, "bold"))
+        title.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
+
+        progressbar = ctk.CTkProgressBar(frame, height=20)
+        progressbar.grid(row=1, column=0, sticky="ew", padx=(0, 10))
+        frame.grid_columnconfigure(0, weight=1)
+
+        percent_label = ctk.CTkLabel(frame, text="0%")
+        percent_label.grid(row=1, column=1)
+
+        time_left_label = ctk.CTkLabel(frame, text="Time left: --:--")
+        time_left_label.grid(row=2, column=0, columnspan=2, sticky="w", pady=(5, 0))
+
+        self.monitor_widgets[monitor_id] = {
+            "progressbar": progressbar,
+            "percent_label": percent_label,
+            "time_left_label": time_left_label
+        }
+
+    def animate_progress(self, monitor_id, start_time, duration):
+        widgets = self.monitor_widgets[monitor_id]
+
         def update():
             elapsed = (datetime.now() - start_time).total_seconds()
             progress = min(1.0, elapsed / duration)
-            self.progressbar.set(progress)
+            percent = int(progress * 100)
+            time_left = max(0, int(duration - elapsed))
+            minutes, seconds = divmod(time_left, 60)
+
+            widgets["progressbar"].set(progress)
+            widgets["percent_label"].configure(text=f"{percent}%")
+            widgets["time_left_label"].configure(text=f"Time left: {minutes:02d}:{seconds:02d}")
+
             if progress < 1.0:
                 self.after(100, update)
 
         update()
-
 
 class MainMenuFrame(ctk.CTkFrame):
     def __init__(self, master, controller):
         super().__init__(master)
         self.controller = controller
 
-        ctk.CTkLabel(self, text="Welcome", font=("Helvetica", 32, "bold")).pack(pady=40)
+        # Row 4 absorbs extra space (pushes everything up slightly)
+        self.grid_rowconfigure(4, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
+        # Top label with more bottom padding
+        ctk.CTkLabel(self, text="ScanOT2", font=("Helvetica", 32, "bold")).grid(
+            row=0, column=0, pady=(40, 20), sticky="n"
+        )
+
+        # First button with more bottom padding
         ctk.CTkButton(self, text="Video Recording Settings", width=300,
-                      command=lambda: controller.show_frame("Home")).pack(pady=20)
+                      command=lambda: controller.show_frame("Home")).grid(
+            row=1, column=0, pady=(0, 15)
+        )
 
-        ctk.CTkButton(self, text="Recording Monitor", width=300,
-                      command=lambda: controller.show_frame("Monitor")).pack(pady=20)
+        # Second button with standard padding
+        ctk.CTkButton(self, text="Current Recording Status", width=300,
+                      command=lambda: controller.show_frame("Monitor")).grid(
+            row=2, column=0, pady=(0, 0)
+        )
+
+
+# ------------- Main App Controller ----------------
+
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("ScanOT2")
+        self.geometry("900x550")
+        self.minsize(500, 400)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.frames = {}
+        for F, name in [
+            (MainMenuFrame, "MainMenu"),
+            (HomeFrame, "Home"),
+            (MonitorFrame, "Monitor"),
+            (WelcomeFrame, "Welcome"),
+        ]:
+            frame = F(self, self)
+            frame.grid(row=0, column=0, sticky="nsew")
+            self.frames[name] = frame
+
+        self.show_frame("Welcome")
+
+    def show_frame(self, name):
+        print('in show_frame', name)
+        frame = self.frames[name]
+        frame.tkraise()
+        if hasattr(frame, "on_show"):
+            print('in show_frame - hasattr')
+            frame.on_show()
+
+
 
 
 # ------------- Check avi files --------------
@@ -456,38 +536,6 @@ def checkAviExists(directory):
                 print(f"Error compressing file {filepath}: {e}")
 
 
-# ------------- Main App Controller ----------------
-
-class App(ctk.CTk):
-    def __init__(self):
-        super().__init__()
-        self.title("Unified Recorder GUI")
-        self.geometry("700x550")
-        self.frames = {}
-
-        for F, name in [
-            (MainMenuFrame, "MainMenu"),
-            (HomeFrame, "Home"),
-            (RecorderFrame, "Recorder"),
-            (ConfigFrame, "Config"),
-            (MonitorFrame, "Monitor"),
-        ]:
-            frame = F(self, self)
-            frame.grid(row=0, column=0, sticky="nsew")
-            self.frames[name] = frame
-
-        self.show_frame("MainMenu")
-
-    def show_frame(self, name):
-        print('in show_frame', name)
-        frame = self.frames[name]
-        frame.tkraise()
-        # ✅ Call on_show() if the frame has it
-        if hasattr(frame, "on_show"):
-            print('in show_frame - hasattr')
-            frame.on_show()
-
-
 def checkBeforeStart():
     with open('C:/Users/user/PycharmProjects/a_new_hope/conf_info.txt', 'r') as f:
         line = f.readlines()[2]
@@ -505,7 +553,9 @@ def checkBeforeStart():
 # ------------------- Run App -------------------
 
 if __name__ == "__main__":
-    checkBeforeStart()
+    #rar_thread = threading.Thread(target=checkBeforeStart)
+    #rar_thread.start()
+    #time.sleep(5)
     recording_thread = threading.Thread(target=mainRecording)
     recording_thread.start()
     ctk.set_appearance_mode("dark")
