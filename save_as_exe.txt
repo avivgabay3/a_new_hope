@@ -1,1 +1,1 @@
-py -m PyInstaller --onefile --hidden-import=cv2 --hidden-import=numpy --hidden-import watchdog --hidden-import mss --hidden-import pyautogui --icon="C:\Users\user\Downloads\app_icon.ico" mainScriptOpt.py
+py -3.11 -m PyInstaller --onefile --hidden-import=cv2 --hidden-import=numpy --hidden-import watchdog --hidden-import mss --hidden-import customtkinter --hidden-import pyautogui --icon="C:\Users\user\Downloads\app_icon.ico" mainApp.py

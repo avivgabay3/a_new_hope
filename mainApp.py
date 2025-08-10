@@ -1,7 +1,6 @@
 import os
 import threading
 import customtkinter as ctk
-# START OF SCRIPT
 import time
 import cv2
 import pyautogui
@@ -12,11 +11,11 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import subprocess
 import ast
-import signal
-import sys
 from tqdm import tqdm
-import atexit
 from tkinter import messagebox, filedialog, PhotoImage
+from pystray import Icon, MenuItem, Menu
+from PIL import Image
+
 
 config = {
     "fps": 5,
@@ -168,6 +167,26 @@ def record_screen(monitor_id, save_path):
                     for c in range(3):
                         roi[:, :, c] = (cursor_alpha * cursor_rgb[:, :, c] +
                                         (1 - cursor_alpha) * roi[:, :, c])
+            # --- Overlay current time in top right ---
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.7
+            font_color = (255, 255, 255)  # White
+            thickness = 2
+
+            # Calculate size so we can align right
+            (text_w, text_h), _ = cv2.getTextSize(timestamp, font, font_scale, thickness)
+
+            # Optional: shadow for visibility
+            shadow_color = (0, 0, 0)
+            cv2.putText(frame, timestamp,
+                        (screen_width - text_w - 10 + 2, text_h + 10 + 2),
+                        font, font_scale, shadow_color, thickness, cv2.LINE_AA)
+
+            # Main text
+            cv2.putText(frame, timestamp,
+                        (screen_width - text_w - 10, text_h + 10),
+                        font, font_scale, font_color, thickness, cv2.LINE_AA)
 
             if scale_factor != 1.0:
                 frame = cv2.resize(frame, (output_width, output_height))
@@ -475,6 +494,7 @@ class MainMenuFrame(ctk.CTkFrame):
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
+        self.protocol("WM_DELETE_WINDOW", self.hide_window)  # Hide instead of closing
         self.title("ScanOT2")
         self.geometry("900x550")
         self.minsize(500, 400)
@@ -495,6 +515,39 @@ class App(ctk.CTk):
 
         self.show_frame("Welcome")
 
+        # Start system tray icon in background thread
+        threading.Thread(target=self.create_tray_icon, daemon=True).start()
+
+    def hide_window(self):
+        """Hide the window instead of closing it."""
+        self.withdraw()
+
+    def show_window(self, icon=None, item=None):
+        """Show the hidden window."""
+        self.after(0, self.deiconify)
+
+    def on_quit(self, icon, item):
+        """Exit the application completely."""
+        icon.stop()
+        self.after(0, self.destroy)
+
+    def create_tray_icon(self):
+        """Create and run the system tray icon."""
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        if not os.path.exists(icon_path):
+            # Fallback simple image if no icon file exists
+            img = Image.new('RGB', (64, 64), color=(0, 122, 204))
+        else:
+            img = Image.open(icon_path)
+
+        menu = Menu(
+            MenuItem("Show", self.show_window),
+            MenuItem("Exit", self.on_quit)
+        )
+
+        self.tray_icon = Icon("ScanOT2", img, "ScanOT2", menu)
+        self.tray_icon.run()
+
     def show_frame(self, name):
         print('in show_frame', name)
         frame = self.frames[name]
@@ -502,7 +555,6 @@ class App(ctk.CTk):
         if hasattr(frame, "on_show"):
             print('in show_frame - hasattr')
             frame.on_show()
-
 
 
 
@@ -553,9 +605,8 @@ def checkBeforeStart():
 # ------------------- Run App -------------------
 
 if __name__ == "__main__":
-    #rar_thread = threading.Thread(target=checkBeforeStart)
-    #rar_thread.start()
-    #time.sleep(5)
+    rar_thread = threading.Thread(target=checkBeforeStart)
+    rar_thread.start()
     recording_thread = threading.Thread(target=mainRecording)
     recording_thread.start()
     ctk.set_appearance_mode("dark")

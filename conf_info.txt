@@ -1,4 +1,4 @@
 5
-2
-['C:/Users/user/Pictures', 'C:/Users/user/Downloads', 'C:/Users/user/Documents']
-100
+1
+['C:/Users/user/Pictures', 'C:/Users/user/Downloads', 'C:/Users/user/Documents', 'C:/Users/user/Videos', 'C:/Users/user/Music', 'C:/Users/user/Desktop']
+85
