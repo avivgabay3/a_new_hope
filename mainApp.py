@@ -7,10 +7,11 @@ runtime with `resource_path` so it will work both in development and in the
 PyInstaller-built EXE without any hard-coded machine-specific paths.
 """
 
+import logging
 import os
+import shutil
 import sys
 import threading
-import shutil
 from pathlib import Path
 import customtkinter as ctk
 import time
@@ -27,12 +28,28 @@ from tqdm import tqdm
 from tkinter import messagebox, filedialog, PhotoImage
 from pystray import Icon, MenuItem, Menu
 from PIL import Image
+IS_FROZEN = getattr(sys, "frozen", False)
+RESOURCE_BASE = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+APP_DIR = Path(sys.executable).resolve().parent if IS_FROZEN else Path(__file__).resolve().parent
+LOG_FILE = APP_DIR / "mainApp.log"
+
+
+def setup_logging() -> None:
+    """Log to a file beside the executable to capture startup/runtime errors when windowed."""
+    try:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8"), logging.StreamHandler(sys.stdout)],
+        )
+    except Exception:
+        # Fall back quietly if the log file cannot be created
+        logging.basicConfig(level=logging.INFO)
 
 
 def resource_path(*parts: str) -> Path:
-    """Resolve paths that work both in development and when frozen by PyInstaller."""
-    base_path = getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)
-    return Path(base_path).joinpath(*parts)
+    """Resolve bundled resources when frozen, or project files when running from source."""
+    return RESOURCE_BASE.joinpath(*parts)
 
 
 def find_winrar_executable() -> str | None:
@@ -49,7 +66,8 @@ def find_winrar_executable() -> str | None:
     return None
 
 
-CONFIG_FILE = resource_path("conf_info.txt")
+CONFIG_TEMPLATE = resource_path("conf_info.txt")
+CONFIG_FILE = APP_DIR / "conf_info.txt"
 CURSOR_FILE = resource_path("cursor.png")
 THEME_FILE = resource_path("red.json")
 WINRAR_PATH = find_winrar_executable()
@@ -63,8 +81,22 @@ config = {
 
 
 def ensure_config_file():
-    if not CONFIG_FILE.exists():
-        CONFIG_FILE.write_text("5\n60\n[]\n80\n")
+    """
+    Guarantee a writable config beside the executable (or script).
+
+    When frozen, the bundled config inside _MEIPASS is read-only/temporary, so copy
+    it next to the EXE the first time; otherwise create a default file.
+    """
+    if CONFIG_FILE.exists():
+        return
+
+    try:
+        if CONFIG_TEMPLATE.exists():
+            CONFIG_FILE.write_text(CONFIG_TEMPLATE.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            CONFIG_FILE.write_text("5\n60\n[]\n80\n", encoding="utf-8")
+    except Exception:
+        logging.exception("Failed to create writable conf_info.txt")
 
 shared_state = {
     "fps": 5,
@@ -116,7 +148,7 @@ def read_config():
                 res = int(lines[i + 3].strip()) / 100
             return fps, minutes, paths, res
     except Exception as e:
-        print(f"Error reading config: {e}")
+        logging.exception("Error reading config")
         return None, None, None, None
 
 class ConfigHandler(FileSystemEventHandler):
@@ -657,12 +689,17 @@ def checkBeforeStart():
 # ------------------- Run App -------------------
 
 if __name__ == "__main__":
-    rar_thread = threading.Thread(target=checkBeforeStart)
-    rar_thread.start()
-    recording_thread = threading.Thread(target=mainRecording)
-    recording_thread.start()
-    ctk.set_appearance_mode("dark")
-    if THEME_FILE.exists():
-        ctk.set_default_color_theme(str(THEME_FILE))
-    app = App()
-    app.mainloop()
+    setup_logging()
+
+    try:
+        rar_thread = threading.Thread(target=checkBeforeStart)
+        rar_thread.start()
+        recording_thread = threading.Thread(target=mainRecording)
+        recording_thread.start()
+        ctk.set_appearance_mode("dark")
+        if THEME_FILE.exists():
+            ctk.set_default_color_theme(str(THEME_FILE))
+        app = App()
+        app.mainloop()
+    except Exception:
+        logging.exception("Fatal error during application startup")

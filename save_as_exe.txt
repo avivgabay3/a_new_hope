@@ -17,3 +17,5 @@
 # - The spec hides the console window (console=False). Set console=True inside mainApp.spec
 #   if you prefer to see stdout/stderr while running the EXE.
 # - If you want a custom taskbar icon, drop an app_icon.ico file in the repo root before building.
+# - Runtime errors are logged to mainApp.log next to the EXE. Run the EXE once, then open that file if
+#   the UI does not appear.

@@ -16,3 +16,7 @@ Use the included PyInstaller spec to build a portable executable:
 python -m PyInstaller mainApp.spec
 ```
 The build output goes to `dist/mainApp/`, which you can copy to another PC. See `save_as_exe.txt` for detailed instructions.
+
+## Troubleshooting the EXE
+- A `mainApp.log` file is written next to `mainApp.exe` on startup to capture any hidden errors (helpful because the EXE runs without a console window).
+- The writable `conf_info.txt` also lives next to the EXE. If it is missing or corrupted, delete it and restart the app to recreate it from the bundled template.
