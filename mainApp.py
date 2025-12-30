@@ -1,5 +1,17 @@
+"""
+Fully self-contained version of the ScanOT2 main application.
+
+Use this exact file content when you need a clean copy of the app (for example
+when rebuilding the executable on another PC). The code resolves resources at
+runtime with `resource_path` so it will work both in development and in the
+PyInstaller-built EXE without any hard-coded machine-specific paths.
+"""
+
 import os
+import sys
 import threading
+import shutil
+from pathlib import Path
 import customtkinter as ctk
 import time
 import cv2
@@ -17,12 +29,42 @@ from pystray import Icon, MenuItem, Menu
 from PIL import Image
 
 
+def resource_path(*parts: str) -> Path:
+    """Resolve paths that work both in development and when frozen by PyInstaller."""
+    base_path = getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)
+    return Path(base_path).joinpath(*parts)
+
+
+def find_winrar_executable() -> str | None:
+    """Return a usable WinRAR/`rar` executable if one is installed."""
+    candidates = [
+        shutil.which("rar"),
+        Path(os.environ.get("ProgramFiles", "")) / "WinRAR" / "rar.exe",
+        Path(os.environ.get("ProgramFiles(x86)", "")) / "WinRAR" / "rar.exe",
+    ]
+
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            return str(candidate)
+    return None
+
+
+CONFIG_FILE = resource_path("conf_info.txt")
+CURSOR_FILE = resource_path("cursor.png")
+THEME_FILE = resource_path("red.json")
+WINRAR_PATH = find_winrar_executable()
+
 config = {
     "fps": 5,
     "file_time": None,
     "save_path": [None],
     "resolution": 80,
 }
+
+
+def ensure_config_file():
+    if not CONFIG_FILE.exists():
+        CONFIG_FILE.write_text("5\n60\n[]\n80\n")
 
 shared_state = {
     "fps": 5,
@@ -40,11 +82,14 @@ open_writers = {}
 video_paths = {}
 
 def compress_and_remove(filepath):
-    winrar_path = r"C:\Program Files\WinRAR\rar.exe"
+    if not WINRAR_PATH:
+        print("WinRAR/rar executable not found; skipping compression.")
+        return
+
     output_rar = filepath.replace(".avi", ".rar")
     filename = os.path.basename(filepath)
 
-    command = [winrar_path, 'a', output_rar, filename]
+    command = [WINRAR_PATH, "a", output_rar, filename]
     try:
         subprocess.run(command, check=True, cwd=os.path.dirname(filepath))
         print(f"File successfully compressed: {output_rar}")
@@ -59,8 +104,10 @@ def compress_and_remove_if_exists(filepath):
         compress_and_remove(filepath)
 
 def read_config():
+    ensure_config_file()
+
     try:
-        with open('C:/Users/user/PycharmProjects/a_new_hope/conf_info.txt', 'r') as f:
+        with CONFIG_FILE.open('r') as f:
             lines = f.readlines()
             for i in range(0, len(lines), 4):
                 fps = lines[i].strip()
@@ -105,7 +152,7 @@ def record_screen(monitor_id, save_path):
     output_width = int(screen_width * scale_factor)
     output_height = int(screen_height * scale_factor)
 
-    cursor = cv2.imread("C:/Users/user/PycharmProjects/a_new_hope/cursor.png", cv2.IMREAD_UNCHANGED)
+    cursor = cv2.imread(str(CURSOR_FILE), cv2.IMREAD_UNCHANGED)
     cursor_enabled = cursor is not None
     if cursor_enabled:
         cursor = cv2.resize(cursor, (20, 20))
@@ -215,10 +262,9 @@ def record_screen(monitor_id, save_path):
 
 
 def monitor_config():
-    config_file_path = r"C:\Users\user\PycharmProjects\a_new_hope\conf_info.txt"
     event_handler = ConfigHandler()
     observer = Observer()
-    observer.schedule(event_handler, path=".", recursive=False)
+    observer.schedule(event_handler, path=str(CONFIG_FILE.parent), recursive=False)
     observer.start()
 
 def run_scan(monitor_id):
@@ -310,8 +356,8 @@ class HomeFrame(ctk.CTkFrame):
             file_time = int(file_time)
             existing_paths = []
 
-            if os.path.exists("conf_info.txt"):
-                with open("conf_info.txt", "r") as file:
+            if CONFIG_FILE.exists():
+                with CONFIG_FILE.open("r") as file:
                     lines = file.readlines()
                 if len(lines) >= 3:
                     try:
@@ -325,7 +371,7 @@ class HomeFrame(ctk.CTkFrame):
                 existing_paths.remove(file_path)
             existing_paths.append(file_path)
 
-            with open("conf_info.txt", "w") as file:
+            with CONFIG_FILE.open("w") as file:
                 file.write(f"{fps}\n{file_time}\n{existing_paths}\n{res}\n")
 
             self.create_monitor_subfolders(file_path)
@@ -334,8 +380,8 @@ class HomeFrame(ctk.CTkFrame):
             messagebox.showerror("Error", "File length or Resolution are invalid.")
 
     def load_existing_config(self):
-        if os.path.exists("conf_info.txt"):
-            with open("conf_info.txt", "r") as file:
+        if CONFIG_FILE.exists():
+            with CONFIG_FILE.open("r") as file:
                 lines = file.readlines()
                 if len(lines) >= 3:
                     self.fps_entry.insert(0, lines[0].strip())
@@ -533,8 +579,8 @@ class App(ctk.CTk):
 
     def create_tray_icon(self):
         """Create and run the system tray icon."""
-        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
-        if not os.path.exists(icon_path):
+        icon_path = resource_path("icon.png")
+        if not icon_path.exists():
             # Fallback simple image if no icon file exists
             img = Image.new('RGB', (64, 64), color=(0, 122, 204))
         else:
@@ -561,15 +607,18 @@ class App(ctk.CTk):
 # ------------- Check avi files --------------
 
 def checkAviExists(directory):
-    winrar_path = r"C:\Program Files\WinRAR\rar.exe"
     """
         Compresses each .avi file in the given directory into a .rar archive using WinRAR,
         and deletes the original .avi file after successful compression.
 
         Args:
             directory (str): Path to the directory to scan.
-            winrar_path (str): Path to the WinRAR executable.
+            Requires WinRAR/`rar` to be available on the machine.
         """
+    if not WINRAR_PATH:
+        print("WinRAR/rar executable not found; skipping compression.")
+        return
+
     if not os.path.isdir(directory):
         raise ValueError(f"Invalid directory: {directory}")
 
@@ -578,7 +627,7 @@ def checkAviExists(directory):
             filepath = os.path.join(directory, filename)
             output_rar = filepath.replace('.avi', '.rar')
 
-            command = [winrar_path, 'a', output_rar, filename]
+            command = [WINRAR_PATH, 'a', output_rar, filename]
             try:
                 subprocess.run(command, check=True, cwd=directory)
                 print(f"File successfully compressed: {output_rar}")
@@ -589,9 +638,12 @@ def checkAviExists(directory):
 
 
 def checkBeforeStart():
-    with open('C:/Users/user/PycharmProjects/a_new_hope/conf_info.txt', 'r') as f:
+    ensure_config_file()
+    with CONFIG_FILE.open('r') as f:
         line = f.readlines()[2]
         sys_args = ast.literal_eval(line.strip())  # Convert string to list
+        if not sys_args:
+            return
         last_path = sys_args[-1]
     i = 1
     while True:
@@ -610,6 +662,7 @@ if __name__ == "__main__":
     recording_thread = threading.Thread(target=mainRecording)
     recording_thread.start()
     ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("C:/Users/user/Downloads/red.json")
+    if THEME_FILE.exists():
+        ctk.set_default_color_theme(str(THEME_FILE))
     app = App()
     app.mainloop()

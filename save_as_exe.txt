@@ -1,1 +1,18 @@
-py -3.11 -m PyInstaller --onefile --hidden-import=cv2 --hidden-import=numpy --hidden-import watchdog --hidden-import mss --hidden-import customtkinter --hidden-import pyautogui --icon="C:\Users\user\Downloads\app_icon.ico" mainApp.py
+# Build ScanOT2 into a standalone EXE
+
+# 1) Install PyInstaller (and wheel dependencies) in your environment
+#    pip install pyinstaller
+#    (If you also need Pillow for icons, install with: pip install pillow)
+
+# 2) From the repository root, run the spec file so bundled assets (config, cursor, theme, icons)
+#    are included next to the executable:
+#    py -3.11 -m PyInstaller mainApp.spec
+#    (Use "python -m PyInstaller mainApp.spec" if python is already on PATH.)
+
+# 3) The portable build will be placed in ./dist/mainApp/ with mainApp.exe and the
+#    bundled resource files. Copy that folder to another PC and run mainApp.exe directly.
+
+# Notes
+# - The spec hides the console window (console=False). Set console=True inside mainApp.spec
+#   if you prefer to see stdout/stderr while running the EXE.
+# - If you want a custom taskbar icon, drop an app_icon.ico file in the repo root before building.

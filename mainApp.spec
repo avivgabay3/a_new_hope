@@ -1,11 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
+from pathlib import Path
+
+project_root = Path(__file__).parent
+
+# Bundle resources so resource_path can find them when frozen
+resource_names = [
+    "conf_info.txt",
+    "cursor.png",
+    "red.json",
+    "app_icon.png",
+    "app_logo.png",
+]
+
+datas = [(str(project_root / name), ".") for name in resource_names if (project_root / name).exists()]
 
 
 a = Analysis(
     ['mainApp.py'],
-    pathex=[],
+    pathex=[str(project_root)],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=['cv2', 'numpy', 'watchdog', 'mss', 'customtkinter', 'pyautogui'],
     hookspath=[],
     hooksconfig={},
@@ -29,11 +43,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\user\\Downloads\\app_icon.ico'],
+    icon=str(project_root / "app_icon.ico") if (project_root / "app_icon.ico").exists() else None,
 )
