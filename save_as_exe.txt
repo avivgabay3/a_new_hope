@@ -5,7 +5,8 @@
 #    (If you also need Pillow for icons, install with: pip install pillow)
 
 # 2) From the repository root, run the spec file so bundled assets (config, cursor, theme, icons)
-#    are included next to the executable:
+#    are included next to the executable. The spec resolves its path via sys.argv[0], so make sure
+#    you invoke it from this directory:
 #    py -3.11 -m PyInstaller mainApp.spec
 #    (Use "python -m PyInstaller mainApp.spec" if python is already on PATH.)
 

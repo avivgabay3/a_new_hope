@@ -1,7 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
+import sys
 
-project_root = Path(__file__).parent
+# PyInstaller executes the spec via exec(), so __file__ may be undefined.
+# Use sys.argv[0] (the spec file path) to locate the project root reliably.
+spec_path = Path(sys.argv[0]).resolve()
+project_root = spec_path.parent
 
 # Bundle resources so resource_path can find them when frozen
 resource_names = [
