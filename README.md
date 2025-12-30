@@ -22,8 +22,8 @@ pip install pyinstaller
 
 ## Building the EXE
 Use the included PyInstaller spec to build a portable **folder**-style executable. UPX compression is disabled in the spec to
-avoid Pillow extraction errors (e.g., `Failed to extract PIL_imaging...`), and the build uses the one-folder layout to avoid
-runtime extraction errors with large numpy/OpenCV DLLs:
+avoid Pillow extraction errors (e.g., `Failed to extract PIL_imaging...`), and the build keeps binaries loose in the one-folder
+layout (no archives) to avoid runtime extraction errors with large numpy/OpenCV/Pillow DLLs:
 ```bash
 python -m PyInstaller mainApp.spec
 ```

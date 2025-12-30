@@ -39,7 +39,9 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    noarchive=False,
+    # Keep binaries loose in the onedir folder (no archive) to avoid runtime
+    # extraction failures for large DLLs (e.g., cv2, Pillow, numpy/scipy).
+    noarchive=True,
     optimize=0,
 )
 pyz = PYZ(a.pure)
@@ -47,8 +49,8 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
+    [],
+    [],
     [],
     name='mainApp',
     debug=False,

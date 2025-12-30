@@ -5,8 +5,10 @@
 
 # 2) Build in one-folder mode (no --onefile) so CustomTkinter's JSON/OTF assets and large DLLs stay
 #    on disk instead of being extracted. The spec resolves its path via sys.argv[0], explicitly adds
-#    the CustomTkinter package directory (equivalent to --add-data "<ctk_path>;customtkinter/"), and
-#    keeps UPX disabled to avoid Pillow extraction errors like "Failed to extract PIL_imaging...".
+#    the CustomTkinter package directory (equivalent to --add-data "<ctk_path>;customtkinter/"),
+#    keeps UPX disabled to avoid Pillow extraction errors like "Failed to extract PIL_imaging...",
+#    and leaves binaries loose (no archive) to prevent runtime extraction failures such as
+#    "Failed to extract cv2/cv2.pyd" or numpy/Pillow DLL errors.
 #    Run from the repo root; if you built previously, delete old dist/build folders first (Windows):
 #       rmdir /s /q dist build
 #    Then build:
