@@ -1,1 +1,29 @@
-py -3.11 -m PyInstaller --onefile --hidden-import=cv2 --hidden-import=numpy --hidden-import watchdog --hidden-import mss --hidden-import customtkinter --hidden-import pyautogui --icon="C:\Users\user\Downloads\app_icon.ico" mainApp.py
+# Build ScanOT2 into a standalone EXE
+
+# 1) Install runtime dependencies (customtkinter, GUI + recording stack) and PyInstaller
+#    pip install customtkinter pillow pystray pyautogui mss watchdog tqdm opencv-python numpy pyinstaller
+
+# 2) Build in one-folder mode (no --onefile) so CustomTkinter's JSON/OTF assets and large DLLs stay
+#    on disk instead of being extracted. The spec resolves its path via sys.argv[0], explicitly adds
+#    the CustomTkinter package directory (equivalent to --add-data "<ctk_path>;customtkinter/"),
+#    bundles the matching pythonXY.dll into _internal/ to prevent "Failed to load Python DLL"
+#    startup errors, keeps UPX disabled to avoid Pillow extraction errors like
+#    "Failed to extract PIL_imaging...", and leaves binaries loose (no archive) to prevent runtime
+#    extraction failures such as "Failed to extract cv2/cv2.pyd" or numpy/Pillow DLL errors.
+#    Run from the repo root; if you built previously, delete old dist/build folders first (Windows):
+#       rmdir /s /q dist build
+#    Then build:
+#       py -3.11 -m PyInstaller mainApp.spec
+#    (Use "python -m PyInstaller mainApp.spec" if python is already on PATH.)
+
+# 3) The portable build will be placed in ./dist/mainApp/ with mainApp.exe and the
+#    bundled resource files. Copy that folder to another PC and run mainApp.exe directly.
+
+# Notes
+# - The spec hides the console window (console=False). Set console=True inside mainApp.spec
+#   if you prefer to see stdout/stderr while running the EXE.
+# - The spec now bundles the OpenCV FFmpeg DLLs automatically. If you see "VideoWriter failed to open" in
+#   mainApp.log, rebuild with this spec and run the EXE from a folder you can write to.
+# - If you want a custom taskbar icon, drop an app_icon.ico file in the repo root before building.
+# - Runtime errors are logged to mainApp.log next to the EXE. Run the EXE once, then open that file if
+#   the UI does not appear.
