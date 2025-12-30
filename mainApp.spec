@@ -46,8 +46,10 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    upx_exclude=[],
+    upx=False,
+    upx_exclude=[
+        # Disable UPX for all binaries to avoid decompression failures (e.g., PIL _imaging)
+    ],
     runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
