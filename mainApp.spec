@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
 import sys
-from PyInstaller.utils.hooks import collect_dynamic_libs
+from PyInstaller.utils.hooks import collect_dynamic_libs, collect_all
 
 # PyInstaller executes the spec via exec(), so __file__ may be undefined.
 # Use sys.argv[0] (the spec file path) to locate the project root reliably.
@@ -17,8 +17,10 @@ resource_names = [
     "app_logo.png",
 ]
 
-binaries = collect_dynamic_libs("cv2") + collect_dynamic_libs("numpy")
-datas = [(str(project_root / name), ".") for name in resource_names if (project_root / name).exists()]
+ctk_data, ctk_binaries, ctk_hiddenimports = collect_all("customtkinter")
+
+binaries = collect_dynamic_libs("cv2") + collect_dynamic_libs("numpy") + ctk_binaries
+datas = [(str(project_root / name), ".") for name in resource_names if (project_root / name).exists()] + ctk_data
 
 
 a = Analysis(
@@ -26,7 +28,7 @@ a = Analysis(
     pathex=[str(project_root)],
     binaries=binaries,
     datas=datas,
-    hiddenimports=['cv2', 'numpy', 'watchdog', 'mss', 'customtkinter', 'pyautogui'],
+    hiddenimports=['cv2', 'numpy', 'watchdog', 'mss', 'customtkinter', 'pyautogui'] + ctk_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

@@ -26,15 +26,19 @@ def require_dependency(module_name: str, install_hint: str):
 
     try:
         return importlib.import_module(module_name)
-    except ImportError:
+    except ImportError as exc:
         # In frozen apps PyInstaller sometimes bypasses find_spec, so rely on
         # the actual import error for clarity and surface the fix up front.
         message = (
             f"Missing required dependency '{module_name}'. "
             f"Install it with: {install_hint}"
         )
+        detail = f"{type(exc).__name__}: {exc}"
+        logging.basicConfig(level=logging.INFO)
+        logging.exception("Failed to import %s", module_name)
         print(message)
-        raise SystemExit(message)
+        print(f"Import error detail: {detail}")
+        raise SystemExit(f"{message}\nImport error detail: {detail}")
 
 
 ctk = require_dependency("customtkinter", "pip install customtkinter")
@@ -73,6 +77,10 @@ def setup_logging() -> None:
         # Fall back quietly if the log file cannot be created
         logging.basicConfig(level=logging.INFO)
     logging.info("Logging initialized. Frozen=%s, app dir=%s, resource base=%s", IS_FROZEN, APP_DIR, RESOURCE_BASE)
+
+
+# Initialize logging before dependency imports so import failures are captured.
+setup_logging()
 
 
 def resource_path(*parts: str) -> Path:
