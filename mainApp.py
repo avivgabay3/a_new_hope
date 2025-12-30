@@ -24,15 +24,17 @@ from tkinter import messagebox, filedialog, PhotoImage
 def require_dependency(module_name: str, install_hint: str):
     """Import a dependency with a clear install hint if it is missing."""
 
-    spec = importlib.util.find_spec(module_name)
-    if spec is None:
+    try:
+        return importlib.import_module(module_name)
+    except ImportError:
+        # In frozen apps PyInstaller sometimes bypasses find_spec, so rely on
+        # the actual import error for clarity and surface the fix up front.
         message = (
             f"Missing required dependency '{module_name}'. "
             f"Install it with: {install_hint}"
         )
         print(message)
         raise SystemExit(message)
-    return importlib.import_module(module_name)
 
 
 ctk = require_dependency("customtkinter", "pip install customtkinter")
