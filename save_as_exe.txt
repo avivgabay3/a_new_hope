@@ -3,12 +3,11 @@
 # 1) Install runtime dependencies (customtkinter, GUI + recording stack) and PyInstaller
 #    pip install customtkinter pillow pystray pyautogui mss watchdog tqdm opencv-python numpy pyinstaller
 
-# 2) From the repository root, run the spec file so bundled assets (config, cursor, theme, icons)
-#    are included next to the executable. The spec resolves its path via sys.argv[0], so make sure
-#    you invoke it from this directory. UPX is disabled in the spec to avoid Pillow extraction errors
-#    like "Failed to extract PIL_imaging...", and the build uses the one-folder layout (no self-
-#    extraction) to avoid decompression errors for large numpy/OpenCV DLLs. If you built previously,
-#    delete old dist/build folders first (Windows):
+# 2) Build in one-folder mode (no --onefile) so CustomTkinter's JSON/OTF assets and large DLLs stay
+#    on disk instead of being extracted. The spec resolves its path via sys.argv[0], explicitly adds
+#    the CustomTkinter package directory (equivalent to --add-data "<ctk_path>;customtkinter/"), and
+#    keeps UPX disabled to avoid Pillow extraction errors like "Failed to extract PIL_imaging...".
+#    Run from the repo root; if you built previously, delete old dist/build folders first (Windows):
 #       rmdir /s /q dist build
 #    Then build:
 #       py -3.11 -m PyInstaller mainApp.spec

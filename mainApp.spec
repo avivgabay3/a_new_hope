@@ -2,6 +2,7 @@
 from pathlib import Path
 import sys
 from PyInstaller.utils.hooks import collect_dynamic_libs, collect_all
+import customtkinter as ctk
 
 # PyInstaller executes the spec via exec(), so __file__ may be undefined.
 # Use sys.argv[0] (the spec file path) to locate the project root reliably.
@@ -18,6 +19,11 @@ resource_names = [
 ]
 
 ctk_data, ctk_binaries, ctk_hiddenimports = collect_all("customtkinter")
+
+# Explicitly bundle the CustomTkinter package directory so all JSON/OTF assets
+# are available in the onedir layout (mirrors `--add-data <ctk_path>;customtkinter/`).
+ctk_path = Path(ctk.__file__).resolve().parent
+ctk_data.append((str(ctk_path), "customtkinter"))
 
 binaries = collect_dynamic_libs("cv2") + collect_dynamic_libs("numpy") + ctk_binaries
 datas = [(str(project_root / name), ".") for name in resource_names if (project_root / name).exists()] + ctk_data
