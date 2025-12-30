@@ -25,7 +25,27 @@ ctk_data, ctk_binaries, ctk_hiddenimports = collect_all("customtkinter")
 ctk_path = Path(ctk.__file__).resolve().parent
 ctk_data.append((str(ctk_path), "customtkinter"))
 
-binaries = collect_dynamic_libs("cv2") + collect_dynamic_libs("numpy") + ctk_binaries
+# Make sure the Python DLL ships with the onedir build so the EXE can start
+# even on machines without Python installed. PyInstaller usually grabs this
+# automatically, but we add it explicitly to avoid "Failed to load Python DLL"
+# errors seen on some systems.
+python_dll_name = f"python{sys.version_info.major}{sys.version_info.minor}.dll"
+python_dll_candidates = [
+    Path(sys.executable).with_name(python_dll_name),
+    Path(sys.base_prefix) / python_dll_name,
+    Path(sys.exec_prefix) / python_dll_name,
+]
+
+python_dll_entries = [
+    (str(path), "_internal") for path in python_dll_candidates if path.exists()
+]
+
+binaries = (
+    collect_dynamic_libs("cv2")
+    + collect_dynamic_libs("numpy")
+    + ctk_binaries
+    + python_dll_entries
+)
 datas = [(str(project_root / name), ".") for name in resource_names if (project_root / name).exists()] + ctk_data
 
 

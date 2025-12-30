@@ -23,7 +23,8 @@ pip install pyinstaller
 ## Building the EXE
 Use the included PyInstaller spec to build a portable **folder**-style executable. UPX compression is disabled in the spec to
 avoid Pillow extraction errors (e.g., `Failed to extract PIL_imaging...`), and the build keeps binaries loose in the one-folder
-layout (no archives) to avoid runtime extraction errors with large numpy/OpenCV/Pillow DLLs:
+layout (no archives) to avoid runtime extraction errors with large numpy/OpenCV/Pillow DLLs. The spec also ships the matching
+`pythonXY.dll` into the `_internal` subfolder so the EXE can start on machines without Python installed:
 ```bash
 python -m PyInstaller mainApp.spec
 ```
@@ -35,3 +36,4 @@ folder. See `save_as_exe.txt` for detailed instructions.
 - The writable `conf_info.txt` also lives next to the EXE. If it is missing or corrupted, delete it and restart the app to recreate it from the bundled template.
 - If recording does not start, open `mainApp.log` and look for "VideoWriter failed to open". This usually means the save path is not writable or the OpenCV FFmpeg DLLs were not bundled. Rebuild with the provided `mainApp.spec` (which now collects the OpenCV dynamic libraries), and ensure you launch the EXE from a folder you can write to.
 - If the EXE reports a missing `customtkinter` even though it is installed, open `mainApp.log` to see the full import error. Rebuild using `mainApp.spec` (which now bundles the CustomTkinter data files and hidden imports) and run the app from the `dist/mainApp/` folder so the bundled assets are discovered.
+- If you see `Failed to load Python DLL ... python313.dll`, rebuild with the provided `mainApp.spec` (it explicitly bundles the `pythonXY.dll` into `_internal/`) and run the app from the `dist/mainApp/` folder so the DLL is discovered.
