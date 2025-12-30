@@ -20,3 +20,4 @@ The build output goes to `dist/mainApp/`, which you can copy to another PC. See 
 ## Troubleshooting the EXE
 - A `mainApp.log` file is written next to `mainApp.exe` on startup to capture any hidden errors (helpful because the EXE runs without a console window).
 - The writable `conf_info.txt` also lives next to the EXE. If it is missing or corrupted, delete it and restart the app to recreate it from the bundled template.
+- If recording does not start, open `mainApp.log` and look for "VideoWriter failed to open". This usually means the save path is not writable or the OpenCV FFmpeg DLLs were not bundled. Rebuild with the provided `mainApp.spec` (which now collects the OpenCV dynamic libraries), and ensure you launch the EXE from a folder you can write to.

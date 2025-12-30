@@ -45,6 +45,7 @@ def setup_logging() -> None:
     except Exception:
         # Fall back quietly if the log file cannot be created
         logging.basicConfig(level=logging.INFO)
+    logging.info("Logging initialized. Frozen=%s, app dir=%s, resource base=%s", IS_FROZEN, APP_DIR, RESOURCE_BASE)
 
 
 def resource_path(*parts: str) -> Path:
@@ -219,6 +220,15 @@ def record_screen(monitor_id, save_path):
                 video_file = os.path.join(f"{save_path}/Monitor_{monitor_id}", f"recording_{current_time}.avi")
                 os.makedirs(os.path.dirname(video_file), exist_ok=True)
                 out = cv2.VideoWriter(video_file, fourcc, fps, (output_width, output_height))
+                if not out.isOpened():
+                    logging.error("VideoWriter failed to open for %s (fps=%s, size=%sx%s)", video_file, fps, output_width, output_height)
+                    messagebox.showerror(
+                        "Recording error",
+                        "Unable to start recording. Please verify the save path is writable and codecs are available (see mainApp.log).",
+                    )
+                    terminate_program.set()
+                    break
+                logging.info("Recording started on monitor %s -> %s", monitor_id, video_file)
                 open_writers[monitor_id] = out
                 video_paths[monitor_id] = video_file
                 frame_count = 0
@@ -287,7 +297,7 @@ def record_screen(monitor_id, save_path):
                 continue
 
     except Exception as e:
-        print(f"Error on monitor {monitor_id}: {e}")
+        logging.exception("Error on monitor %s", monitor_id)
         if out:
             out.release()
         pbar.close()
@@ -309,7 +319,14 @@ def run_scan(monitor_id):
             time.sleep(5)
             continue
         save_path = save_paths[-1]
-        print(f"Starting screen recording for Monitor {monitor_id} at {scale_factor:.0f}% resolution.")
+        logging.info(
+            "Preparing recording | monitor=%s fps=%s duration_min=%s scale=%.0f%% path=%s",
+            monitor_id,
+            fps,
+            file_time,
+            scale_factor * 100,
+            save_path,
+        )
         record_screen(monitor_id, save_path)
 
 
