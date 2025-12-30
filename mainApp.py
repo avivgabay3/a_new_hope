@@ -7,27 +7,52 @@ runtime with `resource_path` so it will work both in development and in the
 PyInstaller-built EXE without any hard-coded machine-specific paths.
 """
 
+import importlib
 import logging
 import os
 import shutil
 import sys
 import threading
 from pathlib import Path
-import customtkinter as ctk
 import time
-import cv2
-import pyautogui
-from datetime import datetime
-import numpy as np
-import mss
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 import subprocess
 import ast
-from tqdm import tqdm
+from datetime import datetime
 from tkinter import messagebox, filedialog, PhotoImage
-from pystray import Icon, MenuItem, Menu
-from PIL import Image
+
+
+def require_dependency(module_name: str, install_hint: str):
+    """Import a dependency with a clear install hint if it is missing."""
+
+    spec = importlib.util.find_spec(module_name)
+    if spec is None:
+        message = (
+            f"Missing required dependency '{module_name}'. "
+            f"Install it with: {install_hint}"
+        )
+        print(message)
+        raise SystemExit(message)
+    return importlib.import_module(module_name)
+
+
+ctk = require_dependency("customtkinter", "pip install customtkinter")
+cv2 = require_dependency("cv2", "pip install opencv-python")
+pyautogui = require_dependency("pyautogui", "pip install pyautogui")
+np = require_dependency("numpy", "pip install numpy")
+mss = require_dependency("mss", "pip install mss")
+watchdog_observers = require_dependency("watchdog.observers", "pip install watchdog")
+watchdog_events = require_dependency("watchdog.events", "pip install watchdog")
+tqdm_module = require_dependency("tqdm", "pip install tqdm")
+pystray_module = require_dependency("pystray", "pip install pystray")
+pillow_image_module = require_dependency("PIL.Image", "pip install pillow")
+
+Observer = watchdog_observers.Observer
+FileSystemEventHandler = watchdog_events.FileSystemEventHandler
+tqdm = tqdm_module.tqdm
+Icon = pystray_module.Icon
+MenuItem = pystray_module.MenuItem
+Menu = pystray_module.Menu
+Image = pillow_image_module.Image
 IS_FROZEN = getattr(sys, "frozen", False)
 RESOURCE_BASE = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 APP_DIR = Path(sys.executable).resolve().parent if IS_FROZEN else Path(__file__).resolve().parent

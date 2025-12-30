@@ -10,6 +10,16 @@ This repository contains the ScanOT2 screen recording app. The dynamic, copy-rea
    ```
 2. Confirm you have the dynamic `mainApp.py` by opening the file and looking for the top-of-file note describing it as a "Fully self-contained" copy-ready version.
 
+## Install runtime dependencies
+Before running the script or building the EXE, install the required packages:
+```bash
+pip install customtkinter pillow pystray pyautogui mss watchdog tqdm opencv-python numpy
+```
+If you plan to build the EXE, also install PyInstaller:
+```bash
+pip install pyinstaller
+```
+
 ## Building the EXE
 Use the included PyInstaller spec to build a portable **folder**-style executable. UPX compression is disabled in the spec to
 avoid Pillow extraction errors (e.g., `Failed to extract PIL_imaging...`), and the build uses the one-folder layout to avoid
