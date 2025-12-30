@@ -17,7 +17,7 @@ resource_names = [
     "app_logo.png",
 ]
 
-binaries = collect_dynamic_libs("cv2")
+binaries = collect_dynamic_libs("cv2") + collect_dynamic_libs("numpy")
 datas = [(str(project_root / name), ".") for name in resource_names if (project_root / name).exists()]
 
 
@@ -58,4 +58,15 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=str(project_root / "app_icon.ico") if (project_root / "app_icon.ico").exists() else None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='mainApp',
 )

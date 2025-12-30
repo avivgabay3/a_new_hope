@@ -7,8 +7,9 @@
 # 2) From the repository root, run the spec file so bundled assets (config, cursor, theme, icons)
 #    are included next to the executable. The spec resolves its path via sys.argv[0], so make sure
 #    you invoke it from this directory. UPX is disabled in the spec to avoid Pillow extraction errors
-#    like "Failed to extract PIL_imaging...". If you built previously, delete old dist/build folders
-#    first (Windows):
+#    like "Failed to extract PIL_imaging...", and the build uses the one-folder layout (no self-
+#    extraction) to avoid decompression errors for large numpy/OpenCV DLLs. If you built previously,
+#    delete old dist/build folders first (Windows):
 #       rmdir /s /q dist build
 #    Then build:
 #       py -3.11 -m PyInstaller mainApp.spec

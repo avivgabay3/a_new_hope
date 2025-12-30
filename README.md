@@ -11,12 +11,14 @@ This repository contains the ScanOT2 screen recording app. The dynamic, copy-rea
 2. Confirm you have the dynamic `mainApp.py` by opening the file and looking for the top-of-file note describing it as a "Fully self-contained" copy-ready version.
 
 ## Building the EXE
-Use the included PyInstaller spec to build a portable executable. UPX compression is disabled in the spec to avoid Pillow
-extraction errors (e.g., `Failed to extract PIL_imaging...`):
+Use the included PyInstaller spec to build a portable **folder**-style executable. UPX compression is disabled in the spec to
+avoid Pillow extraction errors (e.g., `Failed to extract PIL_imaging...`), and the build uses the one-folder layout to avoid
+runtime extraction errors with large numpy/OpenCV DLLs:
 ```bash
 python -m PyInstaller mainApp.spec
 ```
-The build output goes to `dist/mainApp/`, which you can copy to another PC. See `save_as_exe.txt` for detailed instructions.
+The build output goes to `dist/mainApp/`, which you can copy to another PC. Run `dist/mainApp/mainApp.exe` directly from that
+folder. See `save_as_exe.txt` for detailed instructions.
 
 ## Troubleshooting the EXE
 - A `mainApp.log` file is written next to `mainApp.exe` on startup to capture any hidden errors (helpful because the EXE runs without a console window).
