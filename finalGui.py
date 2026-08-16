@@ -59,6 +59,7 @@ class App(ctk.CTk):
             self.tray_status.configure(text=f"Tray unavailable: {detail}", text_color="#e3a64b")
 
         self.after(100, self._drain_ui_queue)
+        self.after(250, self._update_screen_progress)
         self.after(250, self._update_audio_timer)
         if self.config.start_recording_on_launch:
             self.after(500, self.start_screen_recording)
@@ -104,22 +105,35 @@ class App(ctk.CTk):
 
     def _build_dashboard(self, parent) -> None:
         card = ctk.CTkFrame(parent)
-        card.pack(fill="x", padx=22, pady=(28, 14))
-        ctk.CTkLabel(card, text="SCREEN CAPTURE", text_color="#8fa1b8").pack(pady=(22, 5))
+        card.pack(fill="x", padx=22, pady=(18, 10))
+        ctk.CTkLabel(card, text="SCREEN CAPTURE", text_color="#8fa1b8").pack(pady=(16, 3))
         self.screen_status = ctk.CTkLabel(
             card, text="Not recording", font=ctk.CTkFont(size=25, weight="bold")
         )
-        self.screen_status.pack(pady=5)
+        self.screen_status.pack(pady=2)
+        self.screen_timer = ctk.CTkLabel(
+            card, text="Session 00:00:00", font=ctk.CTkFont(size=28, weight="bold")
+        )
+        self.screen_timer.pack(pady=(4, 2))
+        self.segment_progress = ctk.CTkProgressBar(card, width=480, height=12)
+        self.segment_progress.set(0)
+        self.segment_progress.pack(pady=(8, 4))
+        self.segment_progress_label = ctk.CTkLabel(
+            card,
+            text="Current file 00:00:00 / 00:15:00 • Segment 1 • 0%",
+            text_color="#9aa7b8",
+        )
+        self.segment_progress_label.pack(pady=(0, 6))
         self.screen_detail = ctk.CTkLabel(
             card,
             text="Press Start when you are ready.",
             text_color="#9aa7b8",
             wraplength=560,
         )
-        self.screen_detail.pack(pady=(4, 20))
+        self.screen_detail.pack(pady=(2, 10))
 
         controls = ctk.CTkFrame(card, fg_color="transparent")
-        controls.pack(pady=(0, 24))
+        controls.pack(pady=(0, 16))
         self.start_screen_button = ctk.CTkButton(
             controls,
             text="Start recording",
@@ -242,6 +256,7 @@ class App(ctk.CTk):
         else:
             self.auto_start_switch.deselect()
         self.output_label.configure(text=f"Saving to: {self.config.output_path}")
+        self._reset_screen_progress()
 
     def _config_from_form(self) -> AppConfig:
         try:
@@ -270,6 +285,8 @@ class App(ctk.CTk):
         self.config = updated
         self.output_label.configure(text=f"Saving to: {self.config.output_path}")
         self.settings_note.configure(text="Settings saved.", text_color="#69c779")
+        if not was_recording:
+            self._reset_screen_progress()
         if was_recording:
             self.screen_detail.configure(text="Restarting recording with the new settings…")
 
@@ -291,6 +308,7 @@ class App(ctk.CTk):
     def start_screen_recording(self) -> None:
         if self._quitting or self.screen_recorder.is_recording:
             return
+        self._reset_screen_progress()
         self.screen_status.configure(text="Starting…", text_color="#e3a64b")
         self.screen_detail.configure(text="Requesting display access and preparing the video files.")
         self.start_screen_button.configure(state="disabled")
@@ -352,6 +370,7 @@ class App(ctk.CTk):
             self.header_status.configure(text="Idle", text_color="#9aa7b8")
             self.start_screen_button.configure(state="normal")
             self.stop_screen_button.configure(state="disabled")
+            self._reset_screen_progress()
             self.tray.notify(message)
         elif event == "screen_file":
             self.screen_detail.configure(text=f"Saved: {message}")
@@ -383,6 +402,8 @@ class App(ctk.CTk):
         self.stop_screen_button.configure(
             state="normal" if is_still_recording else "disabled"
         )
+        if not is_still_recording:
+            self._reset_screen_progress()
         self.show_window()
         messagebox.showerror("Screen recording error", message, parent=self)
 
@@ -392,6 +413,42 @@ class App(ctk.CTk):
         self.stop_audio_button.configure(state="disabled")
         self.show_window()
         messagebox.showerror("Microphone error", message, parent=self)
+
+    @staticmethod
+    def _format_elapsed(total_seconds: float) -> str:
+        seconds = max(0, int(total_seconds))
+        hours, remainder = divmod(seconds, 3_600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    def _reset_screen_progress(self) -> None:
+        duration = self.config.segment_minutes * 60
+        self.screen_timer.configure(text="Session 00:00:00")
+        self.segment_progress.set(0)
+        self.segment_progress_label.configure(
+            text=(
+                f"Current file 00:00:00 / {self._format_elapsed(duration)} "
+                "• Segment 1 • 0%"
+            )
+        )
+
+    def _update_screen_progress(self) -> None:
+        if not self._quitting:
+            progress = self.screen_recorder.progress()
+            if progress is not None:
+                percent = min(100, int(progress.fraction * 100))
+                self.screen_timer.configure(
+                    text=f"Session {self._format_elapsed(progress.session_seconds)}"
+                )
+                self.segment_progress.set(progress.fraction)
+                self.segment_progress_label.configure(
+                    text=(
+                        f"Current file {self._format_elapsed(progress.segment_seconds)} / "
+                        f"{self._format_elapsed(progress.segment_duration_seconds)} "
+                        f"• Segment {progress.segment_number} • {percent}%"
+                    )
+                )
+            self.after(250, self._update_screen_progress)
 
     def _update_audio_timer(self) -> None:
         if not self._quitting:
