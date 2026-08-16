@@ -86,15 +86,41 @@ class ScreenLifecycleTests(unittest.TestCase):
 
             service.start(config)
             self.assertTrue(frame_written.wait(timeout=2))
+            progress = service.progress()
+            self.assertIsNotNone(progress)
+            self.assertEqual(progress.segment_number, 1)
             service.stop()
 
             videos = list((Path(temporary) / "Monitor_1").glob("*.avi"))
             self.assertEqual(len(videos), 1)
             self.assertNotIn(".part.", videos[0].name)
             self.assertFalse(service.is_recording)
+            self.assertIsNone(service.progress())
             self.assertEqual(events[0][0], "screen_started")
             self.assertIn("screen_file", [event for event, _message in events])
             self.assertEqual(events[-1][0], "screen_stopped")
+
+
+class ScreenProgressTests(unittest.TestCase):
+    def test_progress_reports_session_and_rolls_over_to_next_segment(self):
+        service = ScreenRecordingService()
+        with service._lock:
+            service._running = True
+            service._started_at = 100.0
+            service._segment_started_at = 120.0
+            service._segment_duration_seconds = 60
+            service._segment_number = 2
+
+        progress = service.progress(now=135.0)
+        self.assertEqual(progress.session_seconds, 35.0)
+        self.assertEqual(progress.segment_seconds, 15.0)
+        self.assertEqual(progress.segment_number, 2)
+        self.assertEqual(progress.fraction, 0.25)
+
+        rolled_over = service.progress(now=185.0)
+        self.assertEqual(rolled_over.segment_seconds, 5.0)
+        self.assertEqual(rolled_over.segment_number, 3)
+        self.assertAlmostEqual(rolled_over.fraction, 1 / 12)
 
 
 class AudioLifecycleTests(unittest.TestCase):
