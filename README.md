@@ -25,6 +25,8 @@ system asks you to do so.
 ## Operation
 
 - **Start recording** creates one AVI recorder per connected display.
+- The **Screen recording** tab shows total session time plus the current file's elapsed time,
+  segment number, percentage, and progress bar. These keep updating while the window is hidden.
 - Each video is finalized after the configured number of minutes, then the next segment begins.
 - Closing the window hides it to the tray. Double-click the tray icon, or choose **Open A New Hope**,
   to bring it back.
