@@ -1,0 +1,8 @@
+customtkinter>=5.2,<6
+mss>=9,<11
+numpy>=1.26,<3
+opencv-python>=4.9,<5
+Pillow>=10,<12
+PyAutoGUI>=0.9.54,<1
+PyAudio>=0.2.14,<1
+pystray>=0.19.5,<1

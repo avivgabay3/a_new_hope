@@ -1,235 +1,482 @@
-import customtkinter as ctk
-from tkinter import messagebox, filedialog, PhotoImage
-import mss
+"""Unified desktop UI and application lifecycle for A New Hope."""
+
+from __future__ import annotations
+
 import os
-import ast
-import datetime
+import queue
+import subprocess
+import sys
 import threading
-import pyaudio
-import wave
-from PIL import Image, ImageTk
+import time
 import tkinter as tk
+from pathlib import Path
+from tkinter import filedialog, messagebox
+
+import customtkinter as ctk
+from PIL import Image, ImageTk
+
+from app_config import AppConfig, ConfigStore, resource_path
+from recording_service import AudioRecordingService, RecordingError, ScreenRecordingService
+from tray_icon import TrayIcon
+
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
 class App(ctk.CTk):
-    def __init__(self):
-        super().__init__() # Load and set the PNG icon
-        icon_image = Image.open("app_logo.png")  # Replace with the path to your PNG icon
-        self.icon_photo = ImageTk.PhotoImage(icon_image)
-        self.tk.call('wm', 'iconphoto', self._w, self.icon_photo)
+    def __init__(self) -> None:
+        super().__init__()
         self.title("A New Hope")
-        self.geometry("600x500")
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        self.geometry("720x590")
+        self.minsize(660, 540)
+        self.protocol("WM_DELETE_WINDOW", self.hide_to_tray)
+        self._quitting = False
+        self._hidden_notice_shown = False
+        self._ui_queue: queue.Queue[tuple[object, tuple]] = queue.Queue()
 
-        self.frames = {}
-        self.create_frames()
-        self.show_frame("Home")
+        self.store = ConfigStore()
+        self.config = self.store.load()
+        self.screen_recorder = ScreenRecordingService(self._service_event)
+        self.audio_recorder = AudioRecordingService(self._service_event)
+        self._set_window_icon()
+        self._build_ui()
+        self._load_settings_into_form()
 
-    # def set_icon(self, icon_path):
-    #     # Load the image using Pillow
-    #     img = Image.open(icon_path)
-    #
-    #     # Convert it to a Tkinter-compatible PhotoImage
-    #     tk_icon = ImageTk.PhotoImage(img)
-    #
-    #     # Set the window's icon
-    #     self.tk.call('wm', 'iconphoto', self._w, tk_icon)
-
-
-    def create_frames(self):
-        self.frames["Home"] = HomeFrame(self)
-        self.frames["Recorder"] = RecorderFrame(self)
-        self.frames["Config"] = ConfigFrame(self)
-
-        for frame in self.frames.values():
-            frame.grid(row=0, column=0, sticky="nsew")
-
-    def show_frame(self, name):
-        frame = self.frames[name]
-        frame.tkraise()
-
-
-class HomeFrame(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
-        container = ctk.CTkFrame(self)
-        container.pack(expand=True, fill="both", padx=20, pady=20)
-
-        self.title_label = ctk.CTkLabel(container, text="A New Hope", font=("Helvetica", 32, "bold"))
-        self.title_label.pack(pady=40)
-        ctk.CTkButton(container, text="🎤 Microphone Recorder", command=lambda: master.show_frame("Recorder")).pack(pady=20)
-        ctk.CTkButton(container, text="⚙️ Configuration Tool", command=lambda: master.show_frame("Config")).pack(pady=20)
-
-    def change_title_color(self):
-        original_color = self.title_label.cget("text_color")
-        self.title_label.configure(text_color="yellow")
-        self.after(2000, lambda: self.title_label.configure(text_color=original_color))
-
-
-class RecorderFrame(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master)
-        self.master = master
-        self.recording = False
-
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
-        container = ctk.CTkFrame(self)
-        container.pack(expand=True, fill="both", padx=20, pady=20)
-
-        self.label = ctk.CTkLabel(container, text="Press to Start/Stop Recording 🎤", font=ctk.CTkFont(size=16))
-        self.label.pack(pady=20)
-
-        self.button = ctk.CTkButton(container, text="🎤", command=self.click_handle, width=80, height=40, font=ctk.CTkFont(size=20))
-        self.button.pack(pady=10)
-
-        self.status = ctk.CTkLabel(container, text="Status: Idle", text_color="gray")
-        self.status.pack(pady=10)
-
-        ctk.CTkButton(container, text="⬅ Back to Home", command=lambda: master.show_frame("Home")).pack(pady=10)
-
-    def click_handle(self):
-        if self.recording:
-            self.recording = False
-            self.status.configure(text="Status: Idle...", text_color="gray")
-            self.button.configure(text_color="black")
+        self.tray = TrayIcon(
+            resource_path("app_icon.png"),
+            on_show=lambda: self._enqueue(self.show_window),
+            on_start=lambda: self._enqueue(self.start_screen_recording),
+            on_stop=lambda: self._enqueue(self.stop_screen_recording),
+            on_open_folder=lambda: self._enqueue(self.open_recordings_folder),
+            on_quit=lambda: self._enqueue(self.quit_application),
+            is_recording=lambda: self.screen_recorder.is_recording,
+        )
+        if self.tray.start():
+            self.tray_status.configure(text="Tray: ready", text_color="#69c779")
         else:
-            self.recording = True
-            self.status.configure(text="Status: Recording", text_color="green")
-            self.button.configure(text_color="gray")
-            threading.Thread(target=self.start_recording).start()
-            self.master.frames["Home"].change_title_color()  # Trigger the Easter egg
+            detail = self.tray.error or "pystray is unavailable"
+            self.tray_status.configure(text=f"Tray unavailable: {detail}", text_color="#e3a64b")
 
-    def start_recording(self):
-        start = datetime.datetime.now()
-        file_name = start.strftime("%Y%m%d%H%M%S")
-        if not os.path.exists('C:/sound_files'):
-            os.mkdir('C:/sound_files')
-        file_path = f'C:/sound_files/{file_name}.wav'
-        audio = pyaudio.PyAudio()
-        stream = audio.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, frames_per_buffer=1024)
-        frames = []
+        self.after(100, self._drain_ui_queue)
+        self.after(250, self._update_audio_timer)
+        if self.config.start_recording_on_launch:
+            self.after(500, self.start_screen_recording)
 
+    def _set_window_icon(self) -> None:
+        try:
+            image = Image.open(resource_path("app_icon.png"))
+            self._icon_photo = ImageTk.PhotoImage(image)
+            self.iconphoto(True, self._icon_photo)
+        except Exception:
+            self._icon_photo = None
 
-        while self.recording:
-            data = stream.read(1024)
-            frames.append(data)
+    def _build_ui(self) -> None:
+        header = ctk.CTkFrame(self, corner_radius=0, fg_color=("#e9eef6", "#16202d"))
+        header.pack(fill="x")
+        ctk.CTkLabel(
+            header, text="A New Hope", font=ctk.CTkFont(size=27, weight="bold")
+        ).pack(side="left", padx=24, pady=18)
+        self.header_status = ctk.CTkLabel(header, text="Idle", text_color="#9aa7b8")
+        self.header_status.pack(side="right", padx=24)
 
-            elapsed = datetime.datetime.now() - start
-            secs = elapsed.total_seconds()
-            h = int(secs // 3600)
-            m = int((secs % 3600) // 60)
-            s = int(secs % 60)
-            self.label.configure(text=f"{h:02d}:{m:02d}:{s:02d}")
+        self.tabs = ctk.CTkTabview(self, corner_radius=12)
+        self.tabs.pack(fill="both", expand=True, padx=18, pady=16)
+        dashboard = self.tabs.add("Screen recording")
+        audio = self.tabs.add("Microphone")
+        settings = self.tabs.add("Settings")
+        self._build_dashboard(dashboard)
+        self._build_audio(audio)
+        self._build_settings(settings)
 
-        stream.stop_stream()
-        stream.close()
-        audio.terminate()
+        footer = ctk.CTkFrame(self, fg_color="transparent")
+        footer.pack(fill="x", padx=24, pady=(0, 12))
+        self.tray_status = ctk.CTkLabel(footer, text="Tray: starting…", text_color="#9aa7b8")
+        self.tray_status.pack(side="left")
+        ctk.CTkButton(
+            footer,
+            text="Quit application",
+            width=125,
+            fg_color="#7f3340",
+            hover_color="#9b4050",
+            command=self.quit_application,
+        ).pack(side="right")
 
-        sound_file = wave.open(file_path, 'wb')
-        sound_file.setnchannels(1)
-        sound_file.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-        sound_file.setframerate(44100)
-        sound_file.writeframes(b''.join(frames))
-        sound_file.close()
+    def _build_dashboard(self, parent) -> None:
+        card = ctk.CTkFrame(parent)
+        card.pack(fill="x", padx=22, pady=(28, 14))
+        ctk.CTkLabel(card, text="SCREEN CAPTURE", text_color="#8fa1b8").pack(pady=(22, 5))
+        self.screen_status = ctk.CTkLabel(
+            card, text="Not recording", font=ctk.CTkFont(size=25, weight="bold")
+        )
+        self.screen_status.pack(pady=5)
+        self.screen_detail = ctk.CTkLabel(
+            card,
+            text="Press Start when you are ready.",
+            text_color="#9aa7b8",
+            wraplength=560,
+        )
+        self.screen_detail.pack(pady=(4, 20))
 
+        controls = ctk.CTkFrame(card, fg_color="transparent")
+        controls.pack(pady=(0, 24))
+        self.start_screen_button = ctk.CTkButton(
+            controls,
+            text="Start recording",
+            width=160,
+            height=42,
+            command=self.start_screen_recording,
+        )
+        self.start_screen_button.pack(side="left", padx=7)
+        self.stop_screen_button = ctk.CTkButton(
+            controls,
+            text="Stop recording",
+            width=160,
+            height=42,
+            state="disabled",
+            fg_color="#7f3340",
+            hover_color="#9b4050",
+            command=self.stop_screen_recording,
+        )
+        self.stop_screen_button.pack(side="left", padx=7)
 
-class ConfigFrame(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        self.output_label = ctk.CTkLabel(parent, text="", text_color="#9aa7b8", wraplength=580)
+        self.output_label.pack(pady=(8, 6))
+        ctk.CTkButton(
+            parent,
+            text="Open recordings folder",
+            width=190,
+            command=self.open_recordings_folder,
+        ).pack(pady=7)
 
-        container = ctk.CTkFrame(self)
-        container.pack(expand=True, fill="both", padx=20, pady=20)
+    def _build_audio(self, parent) -> None:
+        card = ctk.CTkFrame(parent)
+        card.pack(fill="x", padx=22, pady=(28, 14))
+        ctk.CTkLabel(card, text="MICROPHONE", text_color="#8fa1b8").pack(pady=(22, 5))
+        self.audio_timer = ctk.CTkLabel(
+            card, text="00:00:00", font=ctk.CTkFont(size=35, weight="bold")
+        )
+        self.audio_timer.pack(pady=6)
+        self.audio_status = ctk.CTkLabel(card, text="Not recording", text_color="#9aa7b8")
+        self.audio_status.pack(pady=(0, 18))
 
-        ctk.CTkLabel(container, text="Configuration", font=("Helvetica", 24, "bold")).pack(pady=20)
+        controls = ctk.CTkFrame(card, fg_color="transparent")
+        controls.pack(pady=(0, 24))
+        self.start_audio_button = ctk.CTkButton(
+            controls, text="Start microphone", width=160, command=self.start_audio_recording
+        )
+        self.start_audio_button.pack(side="left", padx=7)
+        self.stop_audio_button = ctk.CTkButton(
+            controls,
+            text="Stop microphone",
+            width=160,
+            state="disabled",
+            fg_color="#7f3340",
+            hover_color="#9b4050",
+            command=self.stop_audio_recording,
+        )
+        self.stop_audio_button.pack(side="left", padx=7)
 
-        self.userid_entry = self._labeled_entry(container, "User ID:")
-        self.file_time_entry = self._labeled_entry(container, "File length (in minutes):")
-        self.path_entry = self._labeled_entry(container, "Save path:")
+        self.audio_output_label = ctk.CTkLabel(
+            parent, text="", text_color="#9aa7b8", wraplength=580
+        )
+        self.audio_output_label.pack(pady=10)
 
-        browse_button = ctk.CTkButton(container, text="Browse", command=self.browse_folder)
-        browse_button.pack(pady=(5, 15))
+    def _build_settings(self, parent) -> None:
+        form = ctk.CTkScrollableFrame(parent, fg_color="transparent")
+        form.pack(fill="both", expand=True, padx=28, pady=18)
+        form.grid_columnconfigure(1, weight=1)
 
-        enter_button = ctk.CTkButton(container, text="Save Configuration",
-                                     command=self.confirm_config)
-        enter_button.pack(pady=(10, 5))
+        self.user_id_entry = self._settings_entry(form, 0, "User ID")
+        self.segment_entry = self._settings_entry(form, 1, "File length (minutes)")
 
-        ctk.CTkButton(container, text="⬅ Back to Home", command=lambda: master.show_frame("Home")).pack(pady=5)
+        ctk.CTkLabel(form, text="Recordings folder", anchor="w").grid(
+            row=2, column=0, sticky="w", padx=(0, 14), pady=9
+        )
+        self.path_entry = ctk.CTkEntry(form)
+        self.path_entry.grid(row=2, column=1, sticky="ew", pady=9)
+        ctk.CTkButton(form, text="Browse", width=76, command=self.browse_folder).grid(
+            row=2, column=2, padx=(8, 0), pady=9
+        )
 
-        self.load_existing_config()
+        self.fps_entry = self._settings_entry(form, 3, "Frame rate (FPS)")
+        self.scale_entry = self._settings_entry(form, 4, "Resolution (%)")
+        self.auto_start_switch = ctk.CTkSwitch(
+            form, text="Start screen recording when the app opens"
+        )
+        self.auto_start_switch.grid(row=5, column=0, columnspan=3, sticky="w", pady=(18, 12))
 
-    def _labeled_entry(self, parent, label):
-        ctk.CTkLabel(parent, text=label, anchor="w").pack(fill="x")
+        ctk.CTkButton(form, text="Save settings", height=40, command=self.save_settings).grid(
+            row=6, column=0, columnspan=3, pady=18
+        )
+        self.settings_note = ctk.CTkLabel(
+            form,
+            text="Settings are stored in your user profile, not beside the executable.",
+            text_color="#9aa7b8",
+            wraplength=560,
+        )
+        self.settings_note.grid(row=7, column=0, columnspan=3, pady=5)
+
+    @staticmethod
+    def _settings_entry(parent, row: int, label: str):
+        ctk.CTkLabel(parent, text=label, anchor="w").grid(
+            row=row, column=0, sticky="w", padx=(0, 14), pady=9
+        )
         entry = ctk.CTkEntry(parent)
-        entry.pack(pady=5)
+        entry.grid(row=row, column=1, columnspan=2, sticky="ew", pady=9)
         return entry
 
-    def browse_folder(self):
-        path = filedialog.askdirectory()
-        if path:
-            self.path_entry.delete(0, ctk.END)
-            self.path_entry.insert(0, path)
+    def _load_settings_into_form(self) -> None:
+        values = (
+            (self.user_id_entry, self.config.user_id),
+            (self.segment_entry, self.config.segment_minutes),
+            (self.path_entry, self.config.output_path),
+            (self.fps_entry, self.config.fps),
+            (self.scale_entry, self.config.scale_percent),
+        )
+        for entry, value in values:
+            entry.delete(0, tk.END)
+            entry.insert(0, str(value))
+        if self.config.start_recording_on_launch:
+            self.auto_start_switch.select()
+        else:
+            self.auto_start_switch.deselect()
+        self.output_label.configure(text=f"Saving to: {self.config.output_path}")
 
-    def confirm_config(self):
-        userid = self.userid_entry.get()
-        file_time = self.file_time_entry.get()
-        file_path = self.path_entry.get()
-        response = messagebox.askyesno("Confirm Configuration", f"User ID: {userid}\nFile Length: {file_time}\nPath: {file_path}")
-        if response:
-            self.save_config(userid, file_time, file_path)
-
-    def save_config(self, userid, file_time, file_path):
+    def _config_from_form(self) -> AppConfig:
         try:
-            file_time = int(file_time)
-            existing_paths = []
+            return AppConfig(
+                user_id=self.user_id_entry.get().strip(),
+                segment_minutes=int(self.segment_entry.get()),
+                output_path=self.path_entry.get().strip(),
+                fps=int(self.fps_entry.get()),
+                scale_percent=int(self.scale_entry.get()),
+                start_recording_on_launch=bool(self.auto_start_switch.get()),
+            )
+        except ValueError as exc:
+            raise ValueError(
+                "File length, frame rate, and resolution must be whole numbers."
+            ) from exc
 
-            if os.path.exists("conf_info.txt"):
-                with open("conf_info.txt", "r") as file:
-                    lines = file.readlines()
-                if len(lines) >= 3:
-                    try:
-                        existing_paths = ast.literal_eval(lines[2].strip())
-                        if not isinstance(existing_paths, list):
-                            existing_paths = []
-                    except Exception:
-                        pass
+    def save_settings(self) -> None:
+        try:
+            updated = self._config_from_form()
+            self.store.save(updated)
+        except (ValueError, OSError) as exc:
+            messagebox.showerror("Settings not saved", str(exc), parent=self)
+            return
 
-            if file_path in existing_paths:
-                existing_paths.remove(file_path)
-            existing_paths.append(file_path)
+        was_recording = self.screen_recorder.is_recording
+        self.config = updated
+        self.output_label.configure(text=f"Saving to: {self.config.output_path}")
+        self.settings_note.configure(text="Settings saved.", text_color="#69c779")
+        if was_recording:
+            self.screen_detail.configure(text="Restarting recording with the new settings…")
 
-            with open("conf_info.txt", "w") as file:
-                file.write(f"{userid}\n{file_time}\n{existing_paths}\n")
+            def restart() -> None:
+                self.screen_recorder.stop()
+                try:
+                    self.screen_recorder.start(self.config)
+                except RecordingError as exc:
+                    self._enqueue(self._show_screen_error, str(exc))
 
-            self.create_monitor_subfolders(file_path)
-            messagebox.showinfo("Success", "Configuration saved.")
-        except ValueError:
-            messagebox.showerror("Error", "File length must be an integer.")
+            threading.Thread(target=restart, name="settings-restart", daemon=True).start()
 
-    def load_existing_config(self):
-        if os.path.exists("conf_info.txt"):
-            with open("conf_info.txt", "r") as file:
-                lines = file.readlines()
-                if len(lines) >= 2:
-                    self.userid_entry.insert(0, lines[0].strip())
-                    self.file_time_entry.insert(0, lines[1].strip())
+    def browse_folder(self) -> None:
+        selected = filedialog.askdirectory(initialdir=self.path_entry.get() or str(Path.home()))
+        if selected:
+            self.path_entry.delete(0, tk.END)
+            self.path_entry.insert(0, selected)
 
-    def create_monitor_subfolders(self, base_path):
-        with mss.mss() as sct:
-            for i in range(1, len(sct.monitors)):
-                folder_path = os.path.join(base_path, str(i))
-                os.makedirs(folder_path, exist_ok=True)
+    def start_screen_recording(self) -> None:
+        if self._quitting or self.screen_recorder.is_recording:
+            return
+        self.screen_status.configure(text="Starting…", text_color="#e3a64b")
+        self.screen_detail.configure(text="Requesting display access and preparing the video files.")
+        self.start_screen_button.configure(state="disabled")
+
+        def start() -> None:
+            try:
+                self.screen_recorder.start(self.config)
+            except RecordingError as exc:
+                self._enqueue(self._show_screen_error, str(exc))
+            except Exception as exc:
+                self._enqueue(self._show_screen_error, f"Unexpected startup error: {exc}")
+
+        threading.Thread(target=start, name="screen-start", daemon=True).start()
+
+    def stop_screen_recording(self) -> None:
+        if not self.screen_recorder.is_recording:
+            return
+        self.screen_status.configure(text="Stopping…", text_color="#e3a64b")
+        self.stop_screen_button.configure(state="disabled")
+        threading.Thread(target=self.screen_recorder.stop, name="screen-stop", daemon=True).start()
+
+    def start_audio_recording(self) -> None:
+        if self._quitting or self.audio_recorder.is_recording:
+            return
+        self.audio_status.configure(text="Starting…", text_color="#e3a64b")
+        self.start_audio_button.configure(state="disabled")
+        try:
+            self.audio_recorder.start(self.config)
+        except RecordingError as exc:
+            self._show_audio_error(str(exc))
+
+    def stop_audio_recording(self) -> None:
+        if not self.audio_recorder.is_recording:
+            return
+        self.audio_status.configure(text="Stopping…", text_color="#e3a64b")
+        self.stop_audio_button.configure(state="disabled")
+        threading.Thread(target=self.audio_recorder.stop, name="audio-stop", daemon=True).start()
+
+    def _service_event(self, event: str, message: str) -> None:
+        self._enqueue(self._handle_service_event, event, message)
+
+    def _handle_service_event(self, event: str, message: str) -> None:
+        if self._quitting:
+            return
+        if event == "screen_started":
+            if not self.screen_recorder.is_recording:
+                return
+            self.screen_status.configure(text="Recording", text_color="#69c779")
+            self.screen_detail.configure(text=message)
+            self.header_status.configure(text="Screen recording", text_color="#69c779")
+            self.start_screen_button.configure(state="disabled")
+            self.stop_screen_button.configure(state="normal")
+            self.tray.notify(message)
+        elif event == "screen_stopped":
+            self.screen_status.configure(
+                text="Not recording", text_color=("#1f2a38", "#f2f4f8")
+            )
+            self.screen_detail.configure(text=message)
+            self.header_status.configure(text="Idle", text_color="#9aa7b8")
+            self.start_screen_button.configure(state="normal")
+            self.stop_screen_button.configure(state="disabled")
+            self.tray.notify(message)
+        elif event == "screen_file":
+            self.screen_detail.configure(text=f"Saved: {message}")
+        elif event == "screen_error":
+            self._show_screen_error(message)
+        elif event == "audio_started":
+            self.audio_status.configure(text="Recording", text_color="#69c779")
+            self.start_audio_button.configure(state="disabled")
+            self.stop_audio_button.configure(state="normal")
+        elif event == "audio_stopped":
+            self.audio_status.configure(text="Not recording", text_color="#9aa7b8")
+            self.audio_timer.configure(text="00:00:00")
+            self.start_audio_button.configure(state="normal")
+            self.stop_audio_button.configure(state="disabled")
+        elif event == "audio_file":
+            self.audio_output_label.configure(text=f"Saved: {message}")
+        elif event == "audio_error":
+            self._show_audio_error(message)
+        self.tray.refresh()
+
+    def _show_screen_error(self, message: str) -> None:
+        is_still_recording = self.screen_recorder.is_recording
+        self.screen_status.configure(
+            text="Recording with an error" if is_still_recording else "Recording error",
+            text_color="#ef6b73",
+        )
+        self.screen_detail.configure(text=message)
+        self.start_screen_button.configure(state="disabled" if is_still_recording else "normal")
+        self.stop_screen_button.configure(
+            state="normal" if is_still_recording else "disabled"
+        )
+        self.show_window()
+        messagebox.showerror("Screen recording error", message, parent=self)
+
+    def _show_audio_error(self, message: str) -> None:
+        self.audio_status.configure(text="Microphone error", text_color="#ef6b73")
+        self.start_audio_button.configure(state="normal")
+        self.stop_audio_button.configure(state="disabled")
+        self.show_window()
+        messagebox.showerror("Microphone error", message, parent=self)
+
+    def _update_audio_timer(self) -> None:
+        if not self._quitting:
+            if self.audio_recorder.is_recording and self.audio_recorder.started_at is not None:
+                seconds = max(0, int(time.monotonic() - self.audio_recorder.started_at))
+                hours, remainder = divmod(seconds, 3_600)
+                minutes, seconds = divmod(remainder, 60)
+                self.audio_timer.configure(text=f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+            self.after(250, self._update_audio_timer)
+
+    def hide_to_tray(self) -> None:
+        if self._quitting:
+            return
+        if self.tray.available:
+            self.withdraw()
+            if not self._hidden_notice_shown:
+                self.tray.notify("A New Hope is still running. Use the tray menu to reopen or quit.")
+                self._hidden_notice_shown = True
+        else:
+            # Without a working tray, iconifying keeps the application recoverable.
+            self.iconify()
+
+    def show_window(self) -> None:
+        if self._quitting:
+            return
+        self.deiconify()
+        self.lift()
+        try:
+            self.focus_force()
+        except tk.TclError:
+            pass
+
+    def open_recordings_folder(self) -> None:
+        try:
+            folder = self.config.output_dir
+            folder.mkdir(parents=True, exist_ok=True)
+            if sys.platform == "win32":
+                os.startfile(str(folder))  # type: ignore[attr-defined]
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", str(folder)])
+            else:
+                subprocess.Popen(["xdg-open", str(folder)])
+        except Exception as exc:
+            self.show_window()
+            messagebox.showerror("Could not open folder", str(exc), parent=self)
+
+    def quit_application(self) -> None:
+        if self._quitting:
+            return
+        self._quitting = True
+        self.header_status.configure(text="Shutting down…", text_color="#e3a64b")
+        self.start_screen_button.configure(state="disabled")
+        self.stop_screen_button.configure(state="disabled")
+        self.start_audio_button.configure(state="disabled")
+        self.stop_audio_button.configure(state="disabled")
+        self.tray.stop()
+
+        def shutdown() -> None:
+            self.audio_recorder.stop()
+            self.screen_recorder.stop()
+            self._enqueue(self.destroy)
+
+        threading.Thread(target=shutdown, name="app-shutdown", daemon=True).start()
+
+    def _enqueue(self, callback, *args) -> None:
+        self._ui_queue.put((callback, args))
+
+    def _drain_ui_queue(self) -> None:
+        try:
+            while True:
+                callback, args = self._ui_queue.get_nowait()
+                callback(*args)
+        except queue.Empty:
+            pass
+        try:
+            if self.winfo_exists():
+                self.after(100, self._drain_ui_queue)
+        except tk.TclError:
+            pass
+
+
+def main() -> None:
+    app = App()
+    app.mainloop()
 
 
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    main()

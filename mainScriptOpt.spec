@@ -1,12 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_data_files
+
+
+datas = [
+    ("app_icon.png", "."),
+    ("app_logo.png", "."),
+    ("cursor.png", "."),
+    ("conf_info.txt", "."),
+]
+datas += collect_data_files("customtkinter")
 
 a = Analysis(
-    ['mainScriptOpt.py'],
+    ["finalGui.py"],
     pathex=[],
     binaries=[],
-    datas=[],
-    hiddenimports=['cv2', 'numpy', 'watchdog', 'mss', 'pyautogui'],
+    datas=datas,
+    hiddenimports=["cv2", "mss", "numpy", "pyaudio", "pyautogui", "pystray"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -22,18 +32,16 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='mainScriptOpt',
+    name="A_New_Hope",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=True,
+    upx=False,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\user\\Downloads\\app_icon.ico'],
+    icon=["app_icon.png"],
 )
